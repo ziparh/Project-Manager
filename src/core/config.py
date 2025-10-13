@@ -15,6 +15,7 @@ class DatabaseConfig(BaseModel):
 
 class PrefixConfig(BaseModel):
     api_v1: str = '/api/v1'
+    users: str = '/users'
 
 
 class Settings(BaseSettings):

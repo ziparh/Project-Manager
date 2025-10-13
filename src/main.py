@@ -6,7 +6,7 @@ from api.v1.router import router as api_router
 
 app = FastAPI()
 
-app.include_router(api_router, prefix=settings.prefix.api_v1, tags=["api"])
+app.include_router(api_router, prefix=settings.prefix.api_v1)
 
 if __name__ == '__main__':
     uvicorn.run(
