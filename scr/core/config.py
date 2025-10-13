@@ -8,8 +8,13 @@ class RunConfig(BaseModel):
     reload: bool = True
 
 
+class PrefixConfig(BaseModel):
+    api_v1: str = '/api/v1'
+
+
 class Settings(BaseSettings):
     run: RunConfig = RunConfig()
+    prefix: PrefixConfig = PrefixConfig()
 
 
 settings = Settings()
