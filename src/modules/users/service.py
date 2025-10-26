@@ -12,7 +12,9 @@ class UserService:
 
     async def register_user(self, user_data: schemas.UserCreate):
         if await self.repo.get_by_username(user_data.username):
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already exists")
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Username already exists"
+            )
 
         user = await self.repo.create(user_data)
 

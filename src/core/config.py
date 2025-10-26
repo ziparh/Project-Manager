@@ -3,19 +3,20 @@ from pydantic_settings import BaseSettings
 
 
 class RunConfig(BaseModel):
-    host: str = '127.0.0.1'
+    host: str = "127.0.0.1"
     port: int = 8000
     reload: bool = True
 
 
 class DatabaseConfig(BaseModel):
-    url: str = 'sqlite+aiosqlite:///./database.db'
+    url: str = "sqlite+aiosqlite:///./database.db"
     echo: bool = True
     echo_pool: bool = True
 
+
 class PrefixConfig(BaseModel):
-    api_v1: str = '/api/v1'
-    users: str = '/users'
+    api_v1: str = "/api/v1"
+    users: str = "/users"
 
 
 class Settings(BaseSettings):
