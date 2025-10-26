@@ -1,5 +1,6 @@
 from fastapi import HTTPException, status
 
+from core.security.password import PasswordHasher
 from . import repository, schemas
 
 
@@ -15,9 +16,10 @@ class UserService:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT, detail="Username already exists"
             )
+        hashed_password = PasswordHasher.hash(user_data.password)
+        user_data.password = hashed_password
 
         user = await self.repo.create(user_data)
-
         await self.repo.db.commit()
 
         return user
