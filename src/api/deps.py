@@ -9,5 +9,5 @@ async def get_user_repository(db: AsyncSession = Depends(get_session)):
     return repository.UserRepository(db)
 
 
-async def get_user_service(repo: service.UserService = Depends(get_user_repository)):
+async def get_user_service(repo: repository.UserRepository = Depends(get_user_repository)):
     return service.UserService(repo)
