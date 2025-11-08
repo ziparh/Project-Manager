@@ -1,19 +1,14 @@
 from fastapi import APIRouter, Depends
 
-from api.deps import get_user_service
+from api.deps import get_user_service, oauth2_scheme
 from modules.users import schemas, service
 
 router = APIRouter()
 
 
-@router.get("/all/", response_model=list[schemas.UserRead])
-async def get_users(user_service: service.UserService = Depends(get_user_service)):
-    return await user_service.list_users()
-
-
-@router.post("/register/")
-async def register(
-    user_data: schemas.UserCreate,
+@router.get("/me", response_model=schemas.UserRead)
+async def get_me(
+    token: str = Depends(oauth2_scheme),
     user_service: service.UserService = Depends(get_user_service),
 ):
-    return await user_service.register_user(user_data)
+    return await user_service.get_users_me(token=token)

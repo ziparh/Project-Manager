@@ -17,12 +17,21 @@ class DatabaseConfig(BaseModel):
 class PrefixConfig(BaseModel):
     api_v1: str = "/api/v1"
     users: str = "/users"
+    auth: str = "/auth"
+
+
+class AuthJWTConfig(BaseModel):
+    algorithm: str = "HS256"
+    secret_key: str = "secret"
+    access_token_expire: int = 60 * 3  # seconds * minutes
+    refresh_token_expire: int = 60 * 60 * 24 * 14  # seconds * minutes * hours * days
 
 
 class Settings(BaseSettings):
     run: RunConfig = RunConfig()
     db: DatabaseConfig = DatabaseConfig()
     prefix: PrefixConfig = PrefixConfig()
+    jwt: AuthJWTConfig = AuthJWTConfig()
 
 
 settings = Settings()

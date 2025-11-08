@@ -1,5 +1,4 @@
-from typing import Annotated
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict
 
 
 class UserRead(BaseModel):
@@ -10,10 +9,5 @@ class UserRead(BaseModel):
 
 
 class UserCreate(BaseModel):
-    username: Annotated[str, Field(..., min_length=3, max_length=15)]
-    password: Annotated[str, Field(..., min_length=6)]
-
-
-class UserLogin(BaseModel):
-    username: Annotated[str, Field(...)]
-    password: Annotated[str, Field(...)]
+    username: str
+    password: str
