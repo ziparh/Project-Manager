@@ -1,8 +1,8 @@
-"""init
+"""empty message
 
-Revision ID: 75ed0e8fc5f5
+Revision ID: c4a1676cd3c4
 Revises:
-Create Date: 2025-10-13 23:50:36.741320
+Create Date: 2025-11-09 20:30:29.602015
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "75ed0e8fc5f5"
+revision: str = "c4a1676cd3c4"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -30,7 +30,9 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_users_id"), "users", ["id"], unique=False)
-    op.create_index(op.f("ix_users_username"), "users", ["username"], unique=True)
+    op.create_index(
+        op.f("ix_users_username"), "users", ["username"], unique=True
+    )
     # ### end Alembic commands ###
 
 
