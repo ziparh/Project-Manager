@@ -25,7 +25,7 @@ async def login(
 
 @router.post("/refresh", response_model=schemas.TokenResponse)
 async def refresh(
-    refresh_token: str,
+    refresh_request: schemas.RefreshTokenRequest,
     auth_service: service.AuthService = Depends(get_auth_service),
 ):
-    return await auth_service.refresh_access_token(refresh_token=refresh_token)
+    return await auth_service.refresh_access_token(refresh_token_request=refresh_request)

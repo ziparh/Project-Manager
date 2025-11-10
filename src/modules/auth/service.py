@@ -64,10 +64,11 @@ class AuthService:
         return self._create_tokens(user=db_user)
 
     async def refresh_access_token(
-        self, refresh_token: str
+        self, refresh_token_request: auth_schemas.RefreshTokenRequest
     ) -> auth_schemas.TokenResponse:
         db_user = await self.get_user_from_token(
-            token=refresh_token, token_type=TokenType.REFRESH
+            token=refresh_token_request.refresh_token,
+            token_type=TokenType.REFRESH,
         )
 
         return self._create_tokens(user=db_user)
