@@ -19,6 +19,7 @@ class PrefixConfig(BaseModel):
 
 class DatabaseConfig(BaseModel):
     url: str
+    test_db_url: str
     echo: bool = True
     echo_pool: bool = True
 
