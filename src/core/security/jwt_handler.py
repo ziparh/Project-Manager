@@ -14,7 +14,7 @@ class JWTHandler:
         elif token_type == TokenType.REFRESH:
             expire_seconds = settings.jwt.refresh_token_expire
         else:
-            raise ValueError(f"Invalid token_type: {token_type}")
+            raise ValueError(f"Invalid token type: {token_type}")
 
         now = datetime.now(timezone.utc)
         expire = now + timedelta(seconds=expire_seconds)
@@ -39,4 +39,4 @@ class JWTHandler:
             )
             return decoded
         except InvalidTokenError:
-            return None
+            raise InvalidTokenError(f"Invalid token: {token}")

@@ -2,6 +2,7 @@ import pytest
 import time_machine
 from unittest.mock import MagicMock
 from datetime import datetime, timezone
+from jwt import InvalidTokenError
 
 from core.security.jwt_handler import JWTHandler
 from core.config import settings
@@ -43,9 +44,9 @@ def test_tokens_creation_and_decoding_success(
 
 def test_decoding_invalid_token():
     invalid_token = "invalid.jwt.token"
-    result = JWTHandler.decode(invalid_token)
 
-    assert result is None
+    with pytest.raises(InvalidTokenError, match="Invalid token:"):
+        JWTHandler.decode(invalid_token)
 
 def test_creation_wrong_token_type():
     mock_token_type = MagicMock(spec=TokenType)
@@ -55,4 +56,4 @@ def test_creation_wrong_token_type():
         JWTHandler.create(
             user_id=1,
             token_type=mock_token_type,
-        ) 
+        )

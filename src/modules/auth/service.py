@@ -1,5 +1,6 @@
 from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from jwt import InvalidTokenError
 
 from core.security.password import PasswordHasher
 from core.security.jwt_handler import JWTHandler
@@ -23,7 +24,10 @@ class AuthService:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token.",
         )
-        payload = JWTHandler.decode(token=token)
+        try:
+            payload = JWTHandler.decode(token=token)
+        except InvalidTokenError:
+            raise inv_token_exc
 
         if payload is None:
             raise inv_token_exc
@@ -48,11 +52,12 @@ class AuthService:
                 detail=f"User {register_data.username} already exists.",
             )
 
-        register_data = user_schemas.UserCreate(
+        user_to_db = user_model.User(
             username=register_data.username,
-            password=PasswordHasher.hash(register_data.password),
+            hashed_password=PasswordHasher.hash(register_data.password),
         )
-        user = await self.user_repo.create_user(user_data=register_data)
+        user = await self.user_repo.create_user(user=user_to_db)
+        await self.user_repo.db.commit()
 
         return user
 

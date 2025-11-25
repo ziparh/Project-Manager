@@ -9,4 +9,7 @@ class PasswordHasher:
 
     @staticmethod
     def verify(password: str, hashed: str) -> bool:
-        return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
+        try:
+            return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
+        except ValueError:
+            return False

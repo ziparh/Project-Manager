@@ -28,4 +28,6 @@ async def refresh(
     refresh_request: schemas.RefreshTokenRequest,
     auth_service: service.AuthService = Depends(get_auth_service),
 ):
-    return await auth_service.refresh_access_token(refresh_token_request=refresh_request)
+    return await auth_service.refresh_access_token(
+        refresh_token_request=refresh_request
+    )
