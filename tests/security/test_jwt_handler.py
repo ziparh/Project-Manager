@@ -1,7 +1,7 @@
 import pytest
 import time_machine
 from unittest.mock import MagicMock
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from jwt import InvalidTokenError
 
 from core.security.jwt_handler import JWTHandler
@@ -41,6 +41,34 @@ def test_tokens_creation_and_decoding_success(
 
         assert payload["iat"] == fixed_dt.timestamp()
         assert payload["exp"] == fixed_dt.timestamp() + expected_lifetime
+
+@pytest.mark.parametrize(
+    "token_type, expected_lifetime",
+    [
+        (TokenType.ACCESS, settings.jwt.access_token_expire),
+        (TokenType.REFRESH, settings.jwt.refresh_token_expire),
+    ],
+    ids=["access_token_test", "refresh_token_test"],
+)
+def test_decoding_expired_tokens(token_type: TokenType, expected_lifetime: int):
+    fixed_dt = datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+
+    with time_machine.travel(fixed_dt, tick=False):
+        token = JWTHandler.create(user_id=1234, token_type=token_type)
+
+    future_dt = fixed_dt + timedelta(seconds=expected_lifetime + 1)
+
+    with time_machine.travel(future_dt, tick=False):
+        with pytest.raises(InvalidTokenError):
+            JWTHandler.decode(token)
+
+def test_decoding_token_wrong_signature():
+    token = JWTHandler.create(user_id=1234, token_type=TokenType.ACCESS)
+
+    wrong_token = token[:-1] + "X"
+
+    with pytest.raises(InvalidTokenError):
+        JWTHandler.decode(wrong_token)
 
 def test_decoding_invalid_token():
     invalid_token = "invalid.jwt.token"
