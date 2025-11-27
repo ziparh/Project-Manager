@@ -14,7 +14,8 @@ async def test_create_user_success(db_session: AsyncSession):
 
     created_user = await repo.create_user(user=user_input)
 
-    assert created_user.id is not None
+    assert isinstance(created_user.id, int)
+    assert created_user.id > 0
     assert created_user.username == user_input.username
 
     user_in_db = await db_session.get(model.User, created_user.id)

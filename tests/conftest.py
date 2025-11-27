@@ -36,18 +36,14 @@ async def setup_database():
 
 @pytest.fixture(scope="function")
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
-    connection = await engine.connect()
-    transaction = await connection.begin()
-
-    session = AsyncSession(
-        bind=connection,
-        join_transaction_mode="create_savepoint"
-    )
-    yield session
-
-    await session.close()
-    await transaction.rollback()
-    await connection.close()
+    async with engine.connect() as connection:
+        async with connection.begin() as transaction:
+            async with AsyncSession(
+                bind=connection,
+                join_transaction_mode="create_savepoint"
+            ) as session:
+                yield session
+                await transaction.rollback()
 
 @pytest.fixture(scope="function")
 async def client(db_session):

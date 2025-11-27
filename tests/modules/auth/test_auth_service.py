@@ -12,7 +12,7 @@ from modules.auth.service import AuthService
 from modules.auth.schemas import RefreshTokenRequest
 from enums.token import TokenType
 
-from tests.factories import ApiUserFactory, DBUserFactory
+from tests.factories import RegisterUserFactory, DBUserFactory
 
 
 @pytest.fixture
@@ -93,7 +93,7 @@ async def test_get_user_from_token_invalid_payload(
 @patch.object(PasswordHasher, "hash", return_value="fake-hashed-password")
 async def test_register_user_success(mock_hash, auth_service_with_mocks):
     service, mock_user_repo = auth_service_with_mocks
-    data_to_register = ApiUserFactory.build()
+    data_to_register = RegisterUserFactory.build()
     db_user_mock = DBUserFactory.build()
 
     mock_user_repo.get_user_by_username.return_value = None
@@ -113,7 +113,7 @@ async def test_register_user_success(mock_hash, auth_service_with_mocks):
 @pytest.mark.asyncio
 async def test_register_user_conflict(auth_service_with_mocks):
     service, mock_user_repo = auth_service_with_mocks
-    data_to_register = ApiUserFactory.build()
+    data_to_register = RegisterUserFactory.build()
 
     mock_user_repo.get_user_by_username.return_value = data_to_register
 
