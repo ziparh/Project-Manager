@@ -7,7 +7,6 @@ from core.security.jwt_handler import JWTHandler
 from . import schemas as auth_schemas
 from modules.users import (
     repository as user_repository,
-    schemas as user_schemas,
     model as user_model,
 )
 from enums.token import TokenType
