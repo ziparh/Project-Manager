@@ -54,7 +54,7 @@ async def test_register_validation_errors(
     expected_field: str,
 ):
     response = await client.post("/api/v1/auth/register", json=invalid_data)
+    errors = response.json()["detail"]
 
     assert response.status_code == 422
-    errors = response.json()["detail"]
     assert any(expected_field in str(error["loc"]) for error in errors)

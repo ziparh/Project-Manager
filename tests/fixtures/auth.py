@@ -76,7 +76,7 @@ def expired_access_token(test_user: UserModel) -> str:
     return create_expired_token(
         user=test_user,
         token_type=TokenType.ACCESS,
-        lifetime_in_seconds=settings.jwt.expires_in_seconds,
+        lifetime_in_seconds=settings.jwt.access_token_expire,
     )
 
 

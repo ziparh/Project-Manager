@@ -24,10 +24,52 @@ async def test_refresh_access(
 
 
 @pytest.mark.integration
+async def test_refresh_with_access_token(
+        client: AsyncClient,
+        access_token: str,
+):
+    refresh_request = RefreshTokenRequest(refresh_token=access_token)
+
+    response = await client.post(
+        "api/v1/auth/refresh",
+        json=refresh_request.model_dump(),
+    )
+
+    assert response.status_code == 401
+    assert "invalid token" in response.json()["detail"].lower()
+
+
+@pytest.mark.integration
 async def test_refresh_invalid_token(
     client: AsyncClient,
+    invalid_token: str,
 ):
-    refresh_request = RefreshTokenRequest(refresh_token="invalid.jwt.token")
+    refresh_request = RefreshTokenRequest(refresh_token=invalid_token)
+
+    response = await client.post(
+        "api/v1/auth/refresh",
+        json=refresh_request.model_dump(),
+    )
+
+    assert response.status_code == 401
+    assert "invalid token" in response.json()["detail"].lower()
+
+
+@pytest.mark.integration
+async def test_refresh_without_token(client: AsyncClient):
+    response = await client.post(
+        "api/v1/auth/refresh",
+        json={},
+    )
+
+    assert response.status_code == 422
+
+@pytest.mark.integration
+async def test_refresh_with_expired_token(
+        client: AsyncClient,
+        expired_refresh_token: str,
+):
+    refresh_request = RefreshTokenRequest(refresh_token=expired_refresh_token)
 
     response = await client.post(
         "api/v1/auth/refresh",
