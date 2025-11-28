@@ -9,6 +9,7 @@ from core.config import settings
 from enums.token import TokenType
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "token_type, user_id, expected_lifetime",
     [
@@ -42,6 +43,8 @@ def test_tokens_creation_and_decoding_success(
         assert payload["iat"] == fixed_dt.timestamp()
         assert payload["exp"] == fixed_dt.timestamp() + expected_lifetime
 
+
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "token_type, expected_lifetime",
     [
@@ -62,13 +65,15 @@ def test_decoding_expired_tokens(token_type: TokenType, expected_lifetime: int):
         with pytest.raises(InvalidTokenError):
             JWTHandler.decode(token)
 
+
 def test_decoding_token_wrong_signature():
     token = JWTHandler.create(user_id=1234, token_type=TokenType.ACCESS)
 
-    wrong_token = token[:-1] + "X"
+    wrong_token = token + "invalid"
 
     with pytest.raises(InvalidTokenError):
         JWTHandler.decode(wrong_token)
+
 
 def test_decoding_invalid_token():
     invalid_token = "invalid.jwt.token"
@@ -76,11 +81,12 @@ def test_decoding_invalid_token():
     with pytest.raises(InvalidTokenError, match="Invalid token:"):
         JWTHandler.decode(invalid_token)
 
+
 def test_creation_wrong_token_type():
     mock_token_type = MagicMock(spec=TokenType)
     mock_token_type.value = "WRONG_TOKEN_TYPE"
 
-    with pytest.raises(ValueError, match=f"Invalid token type:"):
+    with pytest.raises(ValueError, match="Invalid token type:"):
         JWTHandler.create(
             user_id=1,
             token_type=mock_token_type,

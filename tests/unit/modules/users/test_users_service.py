@@ -19,7 +19,7 @@ def user_service_with_mocks():
     return user_svc, mock_auth_svc, mock_user_repo
 
 
-@pytest.mark.asyncio
+@pytest.mark.unit
 async def test_get_users_me_success(user_service_with_mocks):
     user_svc, mock_auth_svc, _ = user_service_with_mocks
     test_token = "valid.jwt.token"
@@ -35,7 +35,8 @@ async def test_get_users_me_success(user_service_with_mocks):
     )
     assert db_user == expected_user
 
-@pytest.mark.asyncio
+
+@pytest.mark.unit
 async def test_get_users_me_invalid_token(user_service_with_mocks):
     user_svc, mock_auth_svc, _ = user_service_with_mocks
 

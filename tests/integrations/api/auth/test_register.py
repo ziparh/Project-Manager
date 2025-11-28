@@ -3,7 +3,8 @@ from httpx import AsyncClient
 
 from tests.factories import RegisterUserFactory
 
-@pytest.mark.asyncio
+
+@pytest.mark.integration
 async def test_register_success(client: AsyncClient):
     data_to_register = RegisterUserFactory.build()
 
@@ -18,10 +19,11 @@ async def test_register_success(client: AsyncClient):
     assert "password" not in resp_data
     assert "hashed_password" not in resp_data
 
-@pytest.mark.asyncio
+
+@pytest.mark.integration
 async def test_register_conflict(
-        test_user,
-        client: AsyncClient,
+    test_user,
+    client: AsyncClient,
 ):
     data_to_register = RegisterUserFactory.build(username=test_user.username)
 
@@ -33,7 +35,8 @@ async def test_register_conflict(
     assert response.status_code == 409
     assert "already exists" in response.json()["detail"].lower()
 
-@pytest.mark.asyncio
+
+@pytest.mark.integration
 @pytest.mark.parametrize(
     "invalid_data, expected_field",
     [
@@ -43,12 +46,12 @@ async def test_register_conflict(
         ({"username": "testuser", "password": ""}, "password"),
         ({"password": "PassWord123!"}, "username"),
         ({"username": "testuser"}, "password"),
-    ]
+    ],
 )
 async def test_register_validation_errors(
-        client: AsyncClient,
-        invalid_data: dict,
-        expected_field: str,
+    client: AsyncClient,
+    invalid_data: dict,
+    expected_field: str,
 ):
     response = await client.post("/api/v1/auth/register", json=invalid_data)
 

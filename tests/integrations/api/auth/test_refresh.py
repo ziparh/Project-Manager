@@ -4,7 +4,7 @@ from httpx import AsyncClient
 from modules.auth.schemas import RefreshTokenRequest
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_refresh_access(
     client: AsyncClient,
     refresh_token: str,
@@ -23,7 +23,7 @@ async def test_refresh_access(
     assert resp_data["token_type"] == "bearer"
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_refresh_invalid_token(
     client: AsyncClient,
 ):

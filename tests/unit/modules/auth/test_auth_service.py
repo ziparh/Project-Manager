@@ -25,7 +25,7 @@ def auth_service_with_mocks():
     return service, mock_user_repo
 
 
-@pytest.mark.asyncio
+@pytest.mark.unit
 @patch.object(JWTHandler, "decode")
 async def test_get_user_from_token_success(mock_decode, auth_service_with_mocks):
     service, mock_user_repo = auth_service_with_mocks
@@ -47,7 +47,7 @@ async def test_get_user_from_token_success(mock_decode, auth_service_with_mocks)
     assert db_user == expected_user
 
 
-@pytest.mark.asyncio
+@pytest.mark.unit
 @patch.object(JWTHandler, "decode", side_effect=InvalidTokenError)
 async def test_get_user_from_token_invalid_token(mock_decode, auth_service_with_mocks):
     service, _ = auth_service_with_mocks
@@ -61,7 +61,7 @@ async def test_get_user_from_token_invalid_token(mock_decode, auth_service_with_
     assert exc_info.value.detail == "Invalid token."
 
 
-@pytest.mark.asyncio
+@pytest.mark.unit
 @patch.object(JWTHandler, "decode")
 @pytest.mark.parametrize(
     "decode_return, expected_details",
@@ -89,7 +89,7 @@ async def test_get_user_from_token_invalid_payload(
     assert exc_info.value.detail == expected_details
 
 
-@pytest.mark.asyncio
+@pytest.mark.unit
 @patch.object(PasswordHasher, "hash", return_value="fake-hashed-password")
 async def test_register_user_success(mock_hash, auth_service_with_mocks):
     service, mock_user_repo = auth_service_with_mocks
@@ -110,7 +110,7 @@ async def test_register_user_success(mock_hash, auth_service_with_mocks):
     assert created_user == db_user_mock
 
 
-@pytest.mark.asyncio
+@pytest.mark.unit
 async def test_register_user_conflict(auth_service_with_mocks):
     service, mock_user_repo = auth_service_with_mocks
     data_to_register = RegisterUserFactory.build()
@@ -124,7 +124,7 @@ async def test_register_user_conflict(auth_service_with_mocks):
     mock_user_repo.create_user.assert_not_called()
 
 
-@pytest.mark.asyncio
+@pytest.mark.unit
 @patch.object(JWTHandler, "create")
 @patch.object(PasswordHasher, "verify")
 async def test_login_user_success(
@@ -149,7 +149,7 @@ async def test_login_user_success(
     assert token_response.refresh_token == "refresh.token.456"
 
 
-@pytest.mark.asyncio
+@pytest.mark.unit
 @patch.object(JWTHandler, "create")
 @patch.object(PasswordHasher, "verify")
 async def test_login_user_not_found(
@@ -169,7 +169,7 @@ async def test_login_user_not_found(
     mock_jwt_create.assert_not_called()
 
 
-@pytest.mark.asyncio
+@pytest.mark.unit
 @patch.object(JWTHandler, "create")
 @patch.object(PasswordHasher, "verify")
 async def test_user_wrong_password(
@@ -196,7 +196,7 @@ async def test_user_wrong_password(
     assert exc_info.value.detail == "Incorrect username or password."
 
 
-@pytest.mark.asyncio
+@pytest.mark.unit
 @patch.object(JWTHandler, "create")
 @patch.object(AuthService, "get_user_from_token")
 async def test_refresh_access_token_success(

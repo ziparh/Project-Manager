@@ -1,6 +1,9 @@
 /.idea
 /.venv
+/htmlcov
 __pycache__/
 
+coverage.xml
+.coverage
 .env
 *.db

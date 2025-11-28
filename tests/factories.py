@@ -3,7 +3,6 @@ from polyfactory.factories.pydantic_factory import ModelFactory
 
 from modules.users.model import User as UserModel
 from modules.auth.schemas import UserRegister
-from core.security.password import PasswordHasher
 
 
 class DBUserFactory(SQLAlchemyFactory[UserModel]):

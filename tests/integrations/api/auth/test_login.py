@@ -5,7 +5,7 @@ from core.security.jwt_handler import JWTHandler
 from enums.token import TokenType
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_login_success(
     test_user,
     client: AsyncClient,
@@ -32,7 +32,7 @@ async def test_login_success(
     assert refresh_token["type"] == TokenType.REFRESH.value
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_login_wrong_password(
     test_user,
     client: AsyncClient,
@@ -46,7 +46,7 @@ async def test_login_wrong_password(
     assert "incorrect" in response.json()["detail"].lower()
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_login_not_exists_user(client: AsyncClient):
     response = await client.post(
         "api/v1/auth/login",
@@ -66,7 +66,7 @@ SQL_INJECTION_PAYLOADS = [
 ]
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 @pytest.mark.parametrize("malicious_input", SQL_INJECTION_PAYLOADS)
 async def test_login_sql_injection_username(
     client: AsyncClient,
@@ -81,7 +81,7 @@ async def test_login_sql_injection_username(
     assert "incorrect" in response.json()["detail"].lower()
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 @pytest.mark.parametrize("malicious_input", SQL_INJECTION_PAYLOADS)
 async def test_login_sql_injection_password(
     test_user,
@@ -90,7 +90,7 @@ async def test_login_sql_injection_password(
 ):
     response = await client.post(
         "api/v1/auth/login",
-        data={"username":test_user.username, "password": malicious_input},
+        data={"username": test_user.username, "password": malicious_input},
     )
 
     assert response.status_code == 401
