@@ -43,18 +43,28 @@ class AuthService:
     async def register_user(
         self, register_data: auth_schemas.UserRegister
     ) -> user_model.User:
-        is_user = await self.user_repo.get_user_by_username(register_data.username)
-
-        if is_user:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"User {register_data.username} already exists.",
-            )
-
-        user_to_db = user_model.User(
+        is_user_exists = await self.user_repo.get_user_by_username_or_email(
             username=register_data.username,
+            email=register_data.email,
+        )
+
+        if is_user_exists:
+            if is_user_exists.username == register_data.username:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Username already taken.",
+                )
+            raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Email already registered.",
+                )
+
+        user_data = register_data.model_dump(exclude={"password"})
+        user_to_db = user_model.User(
+            **user_data,
             hashed_password=PasswordHasher.hash(register_data.password),
         )
+
         user = await self.user_repo.create_user(user=user_to_db)
         await self.user_repo.db.commit()
 

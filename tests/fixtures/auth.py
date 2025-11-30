@@ -19,10 +19,12 @@ async def test_user(db_session: AsyncSession) -> UserModel:
 
     Credentials:
     - Username: test_user
+    - Email: test@google.com
     - Password: TestPassword123!
     """
     user = DBUserFactory.build(
         username="test_user",
+        email="test@google.com",
         hashed_password=PasswordHasher.hash("TestPassword123!"),
     )
     db_session.add(user)

@@ -96,13 +96,14 @@ async def test_register_user_success(mock_hash, auth_service_with_mocks):
     data_to_register = RegisterUserFactory.build()
     db_user_mock = DBUserFactory.build()
 
-    mock_user_repo.get_user_by_username.return_value = None
+    mock_user_repo.get_user_by_username_or_email.return_value = None
     mock_user_repo.create_user.return_value = db_user_mock
 
     created_user = await service.register_user(data_to_register)
 
-    mock_user_repo.get_user_by_username.assert_called_once_with(
-        data_to_register.username
+    mock_user_repo.get_user_by_username_or_email.assert_called_once_with(
+        username=data_to_register.username,
+        email=data_to_register.email,
     )
     mock_hash.assert_called_once_with(data_to_register.password)
     mock_user_repo.create_user.assert_called_once()
@@ -115,7 +116,7 @@ async def test_register_user_conflict(auth_service_with_mocks):
     service, mock_user_repo = auth_service_with_mocks
     data_to_register = RegisterUserFactory.build()
 
-    mock_user_repo.get_user_by_username.return_value = data_to_register
+    mock_user_repo.get_user_by_username_or_email.return_value = data_to_register
 
     with pytest.raises(HTTPException) as exc_info:
         await service.register_user(data_to_register)
@@ -172,7 +173,7 @@ async def test_login_user_not_found(
 @pytest.mark.unit
 @patch.object(JWTHandler, "create")
 @patch.object(PasswordHasher, "verify")
-async def test_user_wrong_password(
+async def test_login_user_wrong_password(
     mock_password_verify, mock_jwt_create, auth_service_with_mocks
 ):
     service, mock_user_repo = auth_service_with_mocks
