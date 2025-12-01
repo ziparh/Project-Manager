@@ -34,16 +34,16 @@ class AuthService:
             raise inv_token_exc
 
         user_id = int(payload.get("sub"))
-        db_user = await self.user_repo.get_user_by_id(user_id=user_id)
+        db_user = await self.user_repo.get_by_id(user_id=user_id)
 
         if not db_user:
             raise inv_token_exc
         return db_user
 
-    async def register_user(
+    async def register(
         self, register_data: auth_schemas.UserRegister
     ) -> user_model.User:
-        is_user_exists = await self.user_repo.get_user_by_username_or_email(
+        is_user_exists = await self.user_repo.get_by_username_or_email(
             username=register_data.username,
             email=register_data.email,
         )
@@ -55,9 +55,9 @@ class AuthService:
                     detail="Username already taken.",
                 )
             raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="Email already registered.",
-                )
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email already registered.",
+            )
 
         user_data = register_data.model_dump(exclude={"password"})
         user_to_db = user_model.User(
@@ -65,19 +65,18 @@ class AuthService:
             hashed_password=PasswordHasher.hash(register_data.password),
         )
 
-        user = await self.user_repo.create_user(user=user_to_db)
-        await self.user_repo.db.commit()
+        user = await self.user_repo.create(user=user_to_db)
 
         return user
 
-    async def login_user(
+    async def login(
         self, login_data: OAuth2PasswordRequestForm
     ) -> auth_schemas.TokenResponse:
         db_user = await self._get_user_from_login_data(login_data=login_data)
 
         return self._create_tokens(user=db_user)
 
-    async def refresh_access_token(
+    async def refresh_tokens(
         self, refresh_token_request: auth_schemas.RefreshTokenRequest
     ) -> auth_schemas.TokenResponse:
         db_user = await self.get_user_from_token(
@@ -94,7 +93,7 @@ class AuthService:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password.",
         )
-        db_user = await self.user_repo.get_user_by_username(login_data.username)
+        db_user = await self.user_repo.get_by_username(login_data.username)
 
         if not db_user:
             raise wrong_auth_exc

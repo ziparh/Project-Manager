@@ -57,14 +57,33 @@ async def test_register_conflict_email(
 @pytest.mark.parametrize(
     "invalid_data, expected_field",
     [
-        ({"username": "ab", "email": "test@google.com", "password": "PassWord123!"}, "username"),
-        ({"username": "", "email": "test@google.com", "password": "PassWord123!"}, "username"),
+        (
+            {"username": "ab", "email": "test@google.com", "password": "PassWord123!"},
+            "username",
+        ),
+        (
+            {"username": "", "email": "test@google.com", "password": "PassWord123!"},
+            "username",
+        ),
         ({"email": "test@google.com", "password": "PassWord123!"}, "username"),
-        ({"username": "testuser", "email": "wrong.google@com", "password": "PassWord123!"}, "email"),
+        (
+            {
+                "username": "testuser",
+                "email": "wrong.google@com",
+                "password": "PassWord123!",
+            },
+            "email",
+        ),
         ({"username": "testuser", "email": "", "password": "PassWord123!"}, "email"),
         ({"username": "testuser", "password": "PassWord123!"}, "email"),
-        ({"username": "testuser", "email": "test@google.com", "password": "123"}, "password"),
-        ({"username": "testuser", "email": "test@google.com", "password": ""}, "password"),
+        (
+            {"username": "testuser", "email": "test@google.com", "password": "123"},
+            "password",
+        ),
+        (
+            {"username": "testuser", "email": "test@google.com", "password": ""},
+            "password",
+        ),
         ({"username": "testuser", "email": "test@google.com"}, "password"),
     ],
 )

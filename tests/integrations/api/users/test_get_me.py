@@ -1,11 +1,7 @@
 import pytest
-import time_machine
 from httpx import AsyncClient
-from datetime import datetime, timedelta, timezone
 
 from modules.users.model import User as UserModel
-from core.security.jwt_handler import JWTHandler
-from enums.token import TokenType
 
 
 @pytest.mark.integration
@@ -29,10 +25,11 @@ async def test_get_me_without_token(client: AsyncClient):
 
     assert response.status_code == 401
 
+
 @pytest.mark.integration
 async def test_get_me_with_invalid_token(
-        client: AsyncClient,
-        invalid_token: str,
+    client: AsyncClient,
+    invalid_token: str,
 ):
     invalid_headers = {"Authorization": f"Bearer {invalid_token}"}
 
@@ -46,8 +43,8 @@ async def test_get_me_with_invalid_token(
 
 @pytest.mark.integration
 async def test_get_me_with_refresh_token_fail(
-        client: AsyncClient,
-        refresh_token: str,
+    client: AsyncClient,
+    refresh_token: str,
 ):
     invalid_headers = {"Authorization": f"Bearer {refresh_token}"}
 
@@ -61,8 +58,8 @@ async def test_get_me_with_refresh_token_fail(
 
 @pytest.mark.integration
 async def test_get_me_with_expired_token(
-        client: AsyncClient,
-        expired_access_token: str,
+    client: AsyncClient,
+    expired_access_token: str,
 ):
     invalid_headers = {"Authorization": f"Bearer {expired_access_token}"}
 

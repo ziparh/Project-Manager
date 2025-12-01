@@ -18,11 +18,13 @@ async def test_user(db_session: AsyncSession) -> UserModel:
     Create a test user with known credentials.
 
     Credentials:
+    - id: 123
     - Username: test_user
     - Email: test@google.com
-    - Password: TestPassword123!
+    - Hashed_password: TestPassword123!
     """
     user = DBUserFactory.build(
+        id=123,
         username="test_user",
         email="test@google.com",
         hashed_password=PasswordHasher.hash("TestPassword123!"),

@@ -25,8 +25,8 @@ async def test_refresh_access(
 
 @pytest.mark.integration
 async def test_refresh_with_access_token(
-        client: AsyncClient,
-        access_token: str,
+    client: AsyncClient,
+    access_token: str,
 ):
     refresh_request = RefreshTokenRequest(refresh_token=access_token)
 
@@ -64,10 +64,11 @@ async def test_refresh_without_token(client: AsyncClient):
 
     assert response.status_code == 422
 
+
 @pytest.mark.integration
 async def test_refresh_with_expired_token(
-        client: AsyncClient,
-        expired_refresh_token: str,
+    client: AsyncClient,
+    expired_refresh_token: str,
 ):
     refresh_request = RefreshTokenRequest(refresh_token=expired_refresh_token)
 

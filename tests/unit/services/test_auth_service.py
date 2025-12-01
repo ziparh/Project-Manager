@@ -38,12 +38,12 @@ async def test_get_user_from_token_success(mock_decode, auth_service_with_mocks)
         "sub": str(user_id),
     }
     expected_user = DBUserFactory.build(id=user_id)
-    mock_user_repo.get_user_by_id.return_value = expected_user
+    mock_user_repo.get_by_id.return_value = expected_user
 
     db_user = await service.get_user_from_token(token=token, token_type=token_type)
 
     mock_decode.assert_called_once_with(token=token)
-    mock_user_repo.get_user_by_id.assert_called_once_with(user_id=user_id)
+    mock_user_repo.get_by_id.assert_called_once_with(user_id=user_id)
     assert db_user == expected_user
 
 
@@ -91,57 +91,56 @@ async def test_get_user_from_token_invalid_payload(
 
 @pytest.mark.unit
 @patch.object(PasswordHasher, "hash", return_value="fake-hashed-password")
-async def test_register_user_success(mock_hash, auth_service_with_mocks):
+async def test_register_success(mock_hash, auth_service_with_mocks):
     service, mock_user_repo = auth_service_with_mocks
     data_to_register = RegisterUserFactory.build()
     db_user_mock = DBUserFactory.build()
 
-    mock_user_repo.get_user_by_username_or_email.return_value = None
-    mock_user_repo.create_user.return_value = db_user_mock
+    mock_user_repo.get_by_username_or_email.return_value = None
+    mock_user_repo.create.return_value = db_user_mock
 
-    created_user = await service.register_user(data_to_register)
+    created_user = await service.register(data_to_register)
 
-    mock_user_repo.get_user_by_username_or_email.assert_called_once_with(
+    mock_user_repo.get_by_username_or_email.assert_called_once_with(
         username=data_to_register.username,
         email=data_to_register.email,
     )
     mock_hash.assert_called_once_with(data_to_register.password)
-    mock_user_repo.create_user.assert_called_once()
-    mock_user_repo.db.commit.assert_called_once()
+    mock_user_repo.create.assert_called_once()
     assert created_user == db_user_mock
 
 
 @pytest.mark.unit
-async def test_register_user_conflict(auth_service_with_mocks):
+async def test_register_conflict(auth_service_with_mocks):
     service, mock_user_repo = auth_service_with_mocks
     data_to_register = RegisterUserFactory.build()
 
-    mock_user_repo.get_user_by_username_or_email.return_value = data_to_register
+    mock_user_repo.get_by_username_or_email.return_value = data_to_register
 
     with pytest.raises(HTTPException) as exc_info:
-        await service.register_user(data_to_register)
+        await service.register(data_to_register)
 
     assert exc_info.value.status_code == status.HTTP_409_CONFLICT
-    mock_user_repo.create_user.assert_not_called()
+    mock_user_repo.create.assert_not_called()
 
 
 @pytest.mark.unit
 @patch.object(JWTHandler, "create")
 @patch.object(PasswordHasher, "verify")
-async def test_login_user_success(
+async def test_login_success(
     mock_password_verify, mock_jwt_create, auth_service_with_mocks
 ):
     service, mock_user_repo = auth_service_with_mocks
     login_data = OAuth2PasswordRequestForm(username="test_user", password="password123")
     db_user = DBUserFactory.build(username="test_user", hashed_password="password123")
 
-    mock_user_repo.get_user_by_username.return_value = db_user
+    mock_user_repo.get_by_username.return_value = db_user
     mock_password_verify.return_value = True
     mock_jwt_create.side_effect = ["access.token.123", "refresh.token.456"]
 
-    token_response = await service.login_user(login_data)
+    token_response = await service.login(login_data)
 
-    mock_user_repo.get_user_by_username.assert_called_once_with(login_data.username)
+    mock_user_repo.get_by_username.assert_called_once_with(login_data.username)
     mock_password_verify.assert_called_once_with(
         password=login_data.password, hashed=db_user.hashed_password
     )
@@ -153,16 +152,16 @@ async def test_login_user_success(
 @pytest.mark.unit
 @patch.object(JWTHandler, "create")
 @patch.object(PasswordHasher, "verify")
-async def test_login_user_not_found(
+async def test_login_not_found(
     mock_password_verify, mock_jwt_create, auth_service_with_mocks
 ):
     service, mock_user_repo = auth_service_with_mocks
     login_data = OAuth2PasswordRequestForm(username="test_user", password="password123")
 
-    mock_user_repo.get_user_by_username.return_value = None
+    mock_user_repo.get_by_username.return_value = None
 
     with pytest.raises(HTTPException) as exc_info:
-        await service.login_user(login_data)
+        await service.login(login_data)
 
     assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
     assert exc_info.value.detail == "Incorrect username or password."
@@ -173,7 +172,7 @@ async def test_login_user_not_found(
 @pytest.mark.unit
 @patch.object(JWTHandler, "create")
 @patch.object(PasswordHasher, "verify")
-async def test_login_user_wrong_password(
+async def test_login_wrong_password(
     mock_password_verify, mock_jwt_create, auth_service_with_mocks
 ):
     service, mock_user_repo = auth_service_with_mocks
@@ -182,13 +181,13 @@ async def test_login_user_wrong_password(
     )
     db_user = DBUserFactory.build(username="test_user", hashed_password="password123")
 
-    mock_user_repo.get_user_by_username.return_value = db_user
+    mock_user_repo.get_by_username.return_value = db_user
     mock_password_verify.return_value = False
 
     with pytest.raises(HTTPException) as exc_info:
-        await service.login_user(login_data)
+        await service.login(login_data)
 
-    mock_user_repo.get_user_by_username.assert_called_once_with(login_data.username)
+    mock_user_repo.get_by_username.assert_called_once_with(login_data.username)
     mock_password_verify.assert_called_once_with(
         password=login_data.password, hashed=db_user.hashed_password
     )
@@ -200,7 +199,7 @@ async def test_login_user_wrong_password(
 @pytest.mark.unit
 @patch.object(JWTHandler, "create")
 @patch.object(AuthService, "get_user_from_token")
-async def test_refresh_access_token_success(
+async def test_refresh_tokens(
     mock_get_user_from_token, mock_jwt_create, auth_service_with_mocks
 ):
     service, _ = auth_service_with_mocks
@@ -210,7 +209,7 @@ async def test_refresh_access_token_success(
     mock_get_user_from_token.return_value = user
     mock_jwt_create.side_effect = ["access.token.123", "refresh.token.456"]
 
-    token_response = await service.refresh_access_token(refresh_req)
+    token_response = await service.refresh_tokens(refresh_req)
 
     mock_get_user_from_token.assert_called_once_with(
         token=refresh_req.refresh_token, token_type=TokenType.REFRESH

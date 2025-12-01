@@ -1,5 +1,6 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from typing import Annotated
+from pydantic import BaseModel, ConfigDict, Field, EmailStr
 
 
 class UserRead(BaseModel):
@@ -10,3 +11,9 @@ class UserRead(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserPatch(BaseModel):
+    username: Annotated[str | None, Field(min_length=3, max_length=15)] = None
+    email: EmailStr | None = None
+    password: Annotated[str | None, Field(min_length=6)] = None
