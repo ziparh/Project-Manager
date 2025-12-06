@@ -10,7 +10,7 @@ from modules.users import (
 from modules.auth import service as auth_service
 from core.security.password import PasswordHasher
 
-from tests.factories import DBUserFactory
+from tests.factories.models import UserModelFactory
 
 
 @pytest.fixture
@@ -26,7 +26,7 @@ def user_service_with_mocks():
 @pytest.mark.unit
 async def test_update_me_one_field_success(user_service_with_mocks):
     user_svc, mock_auth_svc, mock_user_repo = user_service_with_mocks
-    user = DBUserFactory.build()
+    user = UserModelFactory.build()
     update_data = user_schemas.UserPatch(username="newusername")
 
     mock_user_repo.get_by_username.return_value = None
@@ -42,7 +42,7 @@ async def test_update_me_one_field_success(user_service_with_mocks):
 @pytest.mark.unit
 async def test_update_me_multiple_fields_success(user_service_with_mocks):
     user_svc, mock_auth_svc, mock_user_repo = user_service_with_mocks
-    user = DBUserFactory.build()
+    user = UserModelFactory.build()
     update_data = user_schemas.UserPatch(
         username="newusername",
         email="new@example.com",
@@ -64,7 +64,7 @@ async def test_update_me_multiple_fields_success(user_service_with_mocks):
 @patch.object(PasswordHasher, "hash", return_value="hashed-password")
 async def test_update_me_password_hashed(mock_hash, user_service_with_mocks):
     user_svc, mock_auth_svc, mock_user_repo = user_service_with_mocks
-    user = DBUserFactory.build()
+    user = UserModelFactory.build()
     update_data = user_schemas.UserPatch(password="newpassword123")
 
     mock_user_repo.update_by_id.return_value = user
@@ -80,9 +80,9 @@ async def test_update_me_password_hashed(mock_hash, user_service_with_mocks):
 @pytest.mark.unit
 async def test_update_me_conflict_username(user_service_with_mocks):
     user_svc, mock_auth_svc, mock_user_repo = user_service_with_mocks
-    user = DBUserFactory.build()
+    user = UserModelFactory.build()
     update_data = user_schemas.UserPatch(username="taken")
-    second_mock_user = DBUserFactory.build(username=update_data.username)
+    second_mock_user = UserModelFactory.build(username=update_data.username)
 
     mock_user_repo.get_by_username.return_value = second_mock_user
 
@@ -97,9 +97,9 @@ async def test_update_me_conflict_username(user_service_with_mocks):
 @pytest.mark.unit
 async def test_update_me_conflict_email(user_service_with_mocks):
     user_svc, mock_auth_svc, mock_user_repo = user_service_with_mocks
-    user = DBUserFactory.build()
+    user = UserModelFactory.build()
     update_data = user_schemas.UserPatch(email="taken@example.com")
-    second_user = DBUserFactory.build(email=update_data.email)
+    second_user = UserModelFactory.build(email=update_data.email)
 
     mock_user_repo.get_by_username.return_value = None
     mock_user_repo.get_by_email.return_value = second_user
@@ -115,7 +115,7 @@ async def test_update_me_conflict_email(user_service_with_mocks):
 @pytest.mark.unit
 async def test_delete_me_success(user_service_with_mocks):
     user_svc, mock_auth_svc, mock_user_repo = user_service_with_mocks
-    user = DBUserFactory.build()
+    user = UserModelFactory.build()
 
     await user_svc.delete_me(user)
 

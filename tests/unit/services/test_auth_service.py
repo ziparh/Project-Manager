@@ -12,7 +12,8 @@ from modules.auth.service import AuthService
 from modules.auth.schemas import RefreshTokenRequest
 from enums.token import TokenType
 
-from tests.factories import RegisterUserFactory, DBUserFactory
+from tests.factories.models import UserModelFactory
+from tests.factories.schemas import UserRegisterFactory
 
 
 @pytest.fixture
@@ -37,7 +38,7 @@ async def test_get_user_from_token_success(mock_decode, auth_service_with_mocks)
         "type": token_type.value,
         "sub": str(user_id),
     }
-    expected_user = DBUserFactory.build(id=user_id)
+    expected_user = UserModelFactory.build(id=user_id)
     mock_user_repo.get_by_id.return_value = expected_user
 
     db_user = await service.get_user_from_token(token=token, token_type=token_type)
@@ -93,8 +94,8 @@ async def test_get_user_from_token_invalid_payload(
 @patch.object(PasswordHasher, "hash", return_value="fake-hashed-password")
 async def test_register_success(mock_hash, auth_service_with_mocks):
     service, mock_user_repo = auth_service_with_mocks
-    data_to_register = RegisterUserFactory.build()
-    db_user_mock = DBUserFactory.build()
+    data_to_register = UserRegisterFactory.build()
+    db_user_mock = UserModelFactory.build()
 
     mock_user_repo.get_by_username_or_email.return_value = None
     mock_user_repo.create.return_value = db_user_mock
@@ -113,7 +114,7 @@ async def test_register_success(mock_hash, auth_service_with_mocks):
 @pytest.mark.unit
 async def test_register_conflict(auth_service_with_mocks):
     service, mock_user_repo = auth_service_with_mocks
-    data_to_register = RegisterUserFactory.build()
+    data_to_register = UserRegisterFactory.build()
 
     mock_user_repo.get_by_username_or_email.return_value = data_to_register
 
@@ -132,7 +133,7 @@ async def test_login_success(
 ):
     service, mock_user_repo = auth_service_with_mocks
     login_data = OAuth2PasswordRequestForm(username="test_user", password="password123")
-    db_user = DBUserFactory.build(username="test_user", hashed_password="password123")
+    db_user = UserModelFactory.build(username="test_user", hashed_password="password123")
 
     mock_user_repo.get_by_username.return_value = db_user
     mock_password_verify.return_value = True
@@ -179,7 +180,7 @@ async def test_login_wrong_password(
     login_data = OAuth2PasswordRequestForm(
         username="test_user", password="wrong_password"
     )
-    db_user = DBUserFactory.build(username="test_user", hashed_password="password123")
+    db_user = UserModelFactory.build(username="test_user", hashed_password="password123")
 
     mock_user_repo.get_by_username.return_value = db_user
     mock_password_verify.return_value = False
@@ -204,7 +205,7 @@ async def test_refresh_tokens(
 ):
     service, _ = auth_service_with_mocks
     refresh_req = RefreshTokenRequest(refresh_token="valid_refresh_token")
-    user = DBUserFactory.build()
+    user = UserModelFactory.build()
 
     mock_get_user_from_token.return_value = user
     mock_jwt_create.side_effect = ["access.token.123", "refresh.token.456"]

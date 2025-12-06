@@ -3,13 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.users import repository, model
 
-from tests.factories import DBUserFactory
+from tests.factories.models import UserModelFactory
 
 
 @pytest.mark.integration
 async def test_create_success(db_session: AsyncSession):
     repo = repository.UserRepository(db_session)
-    user_input = DBUserFactory.build()
+    user_input = UserModelFactory.build()
 
     created_user = await repo.create(user=user_input)
 

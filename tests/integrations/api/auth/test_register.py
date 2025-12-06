@@ -1,12 +1,12 @@
 import pytest
 from httpx import AsyncClient
 
-from tests.factories import RegisterUserFactory
+from tests.factories.schemas import UserRegisterFactory
 
 
 @pytest.mark.integration
 async def test_register_success(client: AsyncClient):
-    data_to_register = RegisterUserFactory.build()
+    data_to_register = UserRegisterFactory.build()
 
     response = await client.post(
         "/api/v1/auth/register",
@@ -26,7 +26,7 @@ async def test_register_conflict_username(
     test_user,
     client: AsyncClient,
 ):
-    data_to_register = RegisterUserFactory.build(username=test_user.username)
+    data_to_register = UserRegisterFactory.build(username=test_user.username)
 
     response = await client.post(
         "/api/v1/auth/register",
@@ -42,7 +42,7 @@ async def test_register_conflict_email(
     test_user,
     client: AsyncClient,
 ):
-    data_to_register = RegisterUserFactory.build(email=test_user.email)
+    data_to_register = UserRegisterFactory.build(email=test_user.email)
 
     response = await client.post(
         "/api/v1/auth/register",

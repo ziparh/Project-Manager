@@ -9,7 +9,7 @@ from core.security.password import PasswordHasher
 from core.config import settings
 from enums.token import TokenType
 
-from tests.factories import DBUserFactory
+from tests.factories.models import UserModelFactory
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ async def test_user(db_session: AsyncSession) -> UserModel:
     - Email: test@google.com
     - Hashed_password: TestPassword123!
     """
-    user = DBUserFactory.build(
+    user = UserModelFactory.build(
         id=123,
         username="test_user",
         email="test@google.com",
