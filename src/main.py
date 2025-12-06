@@ -2,11 +2,13 @@ import uvicorn
 from fastapi import FastAPI
 
 from core.config import settings
-from api.v1.router import router as api_router
+from api.router import router as api_router
+
+from utils import model_loader  # noqa: F401
 
 app = FastAPI()
 
-app.include_router(api_router, prefix=settings.prefix.api_v1)
+app.include_router(api_router, prefix=settings.prefix.api)
 
 if __name__ == "__main__":
     uvicorn.run(

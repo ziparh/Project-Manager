@@ -1,7 +1,11 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from typing import TYPE_CHECKING
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.base import Base
 from db.mixins import TimestampMixin
+
+if TYPE_CHECKING:
+    from modules.personal_tasks.model import PersonalTask
 
 
 class User(Base, TimestampMixin):
@@ -11,3 +15,7 @@ class User(Base, TimestampMixin):
     username: Mapped[str] = mapped_column(unique=True, index=True)
     email: Mapped[str] = mapped_column(unique=True, index=True)
     hashed_password: Mapped[str]
+
+    personal_tasks: Mapped[list["PersonalTask"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan", lazy="selectin"
+    )

@@ -6,6 +6,7 @@ engine = create_async_engine(
     url=settings.db.url,
     echo=settings.db.echo,
     echo_pool=settings.db.echo_pool,
+    connect_args=settings.db.connect_args,
 )
 
 async_session_fabric = async_sessionmaker(

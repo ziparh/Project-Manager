@@ -12,9 +12,11 @@ class RunConfig(BaseModel):
 
 
 class PrefixConfig(BaseModel):
-    api_v1: str = "/api/v1"
-    users: str = "/users"
+    api: str = "/api"
+    api_v1: str = "/v1"
     auth: str = "/auth"
+    users: str = "/users"
+    personal_tasks: str = "/personal_tasks"
 
 
 class DatabaseConfig(BaseModel):
@@ -22,6 +24,7 @@ class DatabaseConfig(BaseModel):
     test_db_url: str
     echo: bool = True
     echo_pool: bool = True
+    connect_args: dict = {"server_settings": {"timezone": "UTC"}}
 
 
 class AuthJWTConfig(BaseModel):
