@@ -1,0 +1,322 @@
+import pytest
+import time_machine
+from unittest.mock import AsyncMock
+from fastapi import HTTPException, status
+from datetime import datetime, timedelta, timezone
+
+from modules.personal_tasks import repository, service, schemas as tasks_schemas
+from common import schemas as common_schemas
+from enums.task import TaskStatus, TaskPriority
+
+from tests.factories.models import UserModelFactory, PersonalTaskModelFactory
+
+
+@pytest.fixture
+def mock_repo():
+    """Mock repository"""
+    return AsyncMock(spec=repository.PersonalTaskRepository)
+
+
+@pytest.fixture
+def tasks_svc(mock_repo):
+    """Service with mocked repository"""
+    return service.PersonalTaskService(repo=mock_repo)
+
+
+@pytest.mark.unit
+class TestGetList:
+    async def test_paginated_response(self, tasks_svc, mock_repo):
+        user = UserModelFactory.build()
+        tasks = [PersonalTaskModelFactory.build() for _ in range(5)]
+
+        mock_repo.get_list.return_value = [tasks, 5]
+
+        filters = tasks_schemas.PersonalTaskFilterParams()
+        sorting = tasks_schemas.PersonalTaskSortingParams()
+        pagination = common_schemas.BasePaginationParams(page=1, size=10)
+
+        result = await tasks_svc.get_list(
+            user_id=user.id,
+            filters=filters,
+            sorting=sorting,
+            pagination=pagination,
+        )
+
+        assert isinstance(result, common_schemas.BasePaginationResponse)
+        assert len(result.items) == 5
+        assert result.pagination.total == 5
+        assert result.pagination.size == 10
+        assert result.pagination.page == 1
+
+    async def test_calls_repository_with_correct_params(self, tasks_svc, mock_repo):
+        user = UserModelFactory.build()
+
+        mock_repo.get_list.return_value = [[], 0]
+
+        filters = tasks_schemas.PersonalTaskFilterParams(
+            status=TaskStatus.IN_PROGRESS, search="meeting"
+        )
+        sorting = tasks_schemas.PersonalTaskSortingParams(
+            sort_by="deadline", order="desc"
+        )
+        pagination = common_schemas.BasePaginationParams(page=2, size=10)
+
+        await tasks_svc.get_list(
+            user_id=user.id,
+            filters=filters,
+            sorting=sorting,
+            pagination=pagination,
+        )
+
+        mock_repo.get_list.assert_called_once()
+        kwargs = mock_repo.get_list.call_args.kwargs
+
+        assert kwargs["user_id"] == user.id
+        assert kwargs["filters"].status == TaskStatus.IN_PROGRESS
+        assert kwargs["filters"].search == "meeting"
+        assert kwargs["sorting"].sort_by == "deadline"
+        assert kwargs["sorting"].order == "desc"
+        assert kwargs["pagination"].size == 10
+        assert kwargs["pagination"].offset == 10
+
+    async def test_empty_result(self, tasks_svc, mock_repo):
+        user = UserModelFactory.build()
+
+        mock_repo.get_list.return_value = ([], 0)
+
+        filters = tasks_schemas.PersonalTaskFilterParams()
+        sorting = tasks_schemas.PersonalTaskSortingParams()
+        pagination = common_schemas.BasePaginationParams(page=1, size=10)
+
+        result = await tasks_svc.get_list(
+            user_id=user.id,
+            filters=filters,
+            sorting=sorting,
+            pagination=pagination,
+        )
+
+        assert len(result.items) == 0
+        assert result.pagination.total == 0
+
+
+@pytest.mark.unit
+class TestGetByIdAndOwner:
+    async def test_success(self, tasks_svc, mock_repo):
+        user = UserModelFactory.build()
+        task = PersonalTaskModelFactory.build(user_id=user.id)
+
+        mock_repo.get_by_id_and_user.return_value = task
+
+        result = await tasks_svc.get_by_id_and_owner(task_id=task.id, user_id=user.id)
+
+        assert result == task
+        mock_repo.get_by_id_and_user.assert_called_once_with(
+            task_id=task.id, user_id=user.id
+        )
+
+    async def test_not_found(self, tasks_svc, mock_repo):
+        user = UserModelFactory.build()
+
+        mock_repo.get_by_id_and_user.return_value = None
+
+        with pytest.raises(HTTPException) as exc_info:
+            await tasks_svc.get_by_id_and_owner(task_id=9999, user_id=user.id)
+
+        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
+        assert "not found" in exc_info.value.detail.lower()
+
+
+@pytest.mark.unit
+class TestCreate:
+    async def test_with_all_data(self, tasks_svc, mock_repo):
+        user = UserModelFactory.build()
+        task_data = tasks_schemas.PersonalTaskCreate(
+            title="Test task",
+            description="Some description",
+            deadline=datetime.now(timezone.utc),
+            priority=TaskPriority.LOW,
+            status=TaskStatus.TODO,
+        )
+        created_task = PersonalTaskModelFactory.build(
+            user_id=user.id,
+            title=task_data.title,
+            description=task_data.description,
+            deadline=task_data.deadline,
+            priority=task_data.priority,
+            status=task_data.status,
+        )
+
+        mock_repo.create.return_value = created_task
+
+        result = await tasks_svc.create(user_id=user.id, data=task_data)
+
+        assert result == created_task
+        mock_repo.create.assert_called_once()
+
+        kwargs = mock_repo.create.call_args.kwargs
+        assert kwargs["user_id"] == user.id
+        assert kwargs["data"]["title"] == "Test task"
+        assert kwargs["data"]["description"] == "Some description"
+        assert kwargs["data"]["deadline"] == task_data.deadline
+        assert kwargs["data"]["priority"] == task_data.priority
+        assert kwargs["data"]["status"] == task_data.status
+
+    async def test_with_minimal_data(self, tasks_svc, mock_repo):
+        user = UserModelFactory.build()
+        task_data = tasks_schemas.PersonalTaskCreate(title="Test task")
+        created_task = PersonalTaskModelFactory.build(
+            user_id=user.id, title=task_data.title
+        )
+
+        mock_repo.create.return_value = created_task
+
+        result = await tasks_svc.create(user_id=user.id, data=task_data)
+
+        assert result == created_task
+        mock_repo.create.assert_called_once()
+
+        kwargs = mock_repo.create.call_args.kwargs
+        assert kwargs["user_id"] == user.id
+        assert kwargs["data"]["title"] == "Test task"
+
+
+@pytest.mark.unit
+class TestUpdate:
+    async def test_with_all_data(self, tasks_svc, mock_repo):
+        user = UserModelFactory.build()
+        fixed_dt = datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+
+        with time_machine.travel(fixed_dt, tick=False):
+            existing_task = PersonalTaskModelFactory.build(
+                user_id=user.id,
+                title="Old title",
+                description="Some old description",
+                deadline=datetime.now(timezone.utc) + timedelta(days=1),
+                priority=TaskPriority.LOW,
+                status=TaskStatus.TODO,
+            )
+            update_data = tasks_schemas.PersonalTaskPatch(
+                title="New title",
+                description="Some new description",
+                deadline=datetime.now(timezone.utc) + timedelta(days=2),
+                priority=TaskPriority.CRITICAL,
+                status=TaskStatus.IN_PROGRESS,
+            )
+            updated_task = PersonalTaskModelFactory.build(
+                id=existing_task.id,
+                user_id=user.id,
+                title=update_data.title,
+                description=update_data.description,
+                deadline=update_data.deadline,
+                priority=update_data.priority,
+                status=update_data.status,
+            )
+
+            mock_repo.get_by_id_and_user.return_value = existing_task
+            mock_repo.update_by_id.return_value = updated_task
+
+            result = await tasks_svc.update(
+                task_id=existing_task.id,
+                user_id=user.id,
+                data=update_data,
+            )
+
+            assert result == updated_task
+            mock_repo.get_by_id_and_user.assert_called_once_with(
+                task_id=existing_task.id, user_id=user.id
+            )
+            mock_repo.update_by_id.assert_called_once()
+
+            kwargs = mock_repo.update_by_id.call_args.kwargs
+            assert kwargs["task_id"] == existing_task.id
+            assert kwargs["data"]["title"] == "New title"
+            assert kwargs["data"]["description"] == "Some new description"
+            assert kwargs["data"]["deadline"] == datetime.now(timezone.utc) + timedelta(
+                days=2
+            )
+            assert kwargs["data"]["status"] == TaskStatus.IN_PROGRESS
+            assert kwargs["data"]["priority"] == TaskPriority.CRITICAL
+
+    async def test_with_partial_data(self, tasks_svc, mock_repo):
+        user = UserModelFactory.build()
+        existing_task = PersonalTaskModelFactory.build(
+            user_id=user.id,
+            title="Old title",
+            status=TaskStatus.TODO,
+            priority=TaskPriority.CRITICAL,
+        )
+        update_data = tasks_schemas.PersonalTaskPatch(
+            title="New title", status=TaskStatus.IN_PROGRESS
+        )
+        updated_task = PersonalTaskModelFactory.build(
+            id=existing_task.id,
+            user_id=user.id,
+            title=update_data.title,
+            status=update_data.status,
+        )
+
+        mock_repo.get_by_id_and_user.return_value = existing_task
+        mock_repo.update_by_id.return_value = updated_task
+
+        result = await tasks_svc.update(
+            task_id=existing_task.id,
+            user_id=user.id,
+            data=update_data,
+        )
+
+        assert result == updated_task
+        mock_repo.get_by_id_and_user.assert_called_once_with(
+            task_id=existing_task.id, user_id=user.id
+        )
+        mock_repo.update_by_id.assert_called_once()
+
+        kwargs = mock_repo.update_by_id.call_args.kwargs
+        assert kwargs["task_id"] == existing_task.id
+        assert kwargs["data"]["title"] == "New title"
+        assert kwargs["data"]["status"] == TaskStatus.IN_PROGRESS
+
+    async def test_not_found(self, tasks_svc, mock_repo):
+        user = UserModelFactory.build()
+        update_data = tasks_schemas.PersonalTaskPatch(title="New title")
+
+        mock_repo.get_by_id_and_user.return_value = None
+
+        with pytest.raises(HTTPException) as exc_info:
+            await tasks_svc.update(
+                task_id=9999,
+                user_id=user.id,
+                data=update_data,
+            )
+
+        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
+        assert "not found" in exc_info.value.detail.lower()
+        mock_repo.update_by_id.assert_not_called()
+
+
+@pytest.mark.unit
+class TestDelete:
+    async def test_success(self, tasks_svc, mock_repo):
+        user = UserModelFactory.build()
+        task = PersonalTaskModelFactory.build(user_id=user.id)
+
+        mock_repo.get_by_id_and_user.return_value = task
+        mock_repo.delete_by_id.return_value = None
+
+        await tasks_svc.delete(task_id=task.id, user_id=user.id)
+
+        mock_repo.get_by_id_and_user.assert_called_once_with(
+            task_id=task.id, user_id=user.id
+        )
+        mock_repo.delete_by_id.assert_called_once_with(task.id)
+
+    async def test_not_found(self, tasks_svc, mock_repo):
+        user = UserModelFactory.build()
+
+        mock_repo.get_by_id_and_user.return_value = None
+
+        with pytest.raises(HTTPException) as exc_info:
+            await tasks_svc.delete(task_id=9999, user_id=user.id)
+
+        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
+        assert "not found" in exc_info.value.detail.lower()
+        mock_repo.delete_by_id.assert_not_called()

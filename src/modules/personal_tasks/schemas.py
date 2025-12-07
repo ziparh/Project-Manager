@@ -2,6 +2,7 @@ from typing import Annotated, Literal
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, BeforeValidator
 
+from common.schemas import BaseSortingParams
 from enums.task import TaskPriority, TaskStatus
 
 
@@ -53,10 +54,9 @@ class PersonalTaskFilterParams(BaseModel):
     )
 
 
-class PersonalTaskSortingParams(BaseModel):
+class PersonalTaskSortingParams(BaseSortingParams):
     """Query parameters for task sorting"""
 
     sort_by: Literal["deadline", "priority", "created_at", "updated_at"] = Field(
         "created_at", description="Fields to sort by"
     )
-    order: Literal["asc", "desc"] = Field("asc", description="Sort order")

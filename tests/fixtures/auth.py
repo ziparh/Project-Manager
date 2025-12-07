@@ -62,7 +62,7 @@ def create_expired_token(
     """
     Helping function
     Generate an expired token.
-    Useful for testing token expiration handling.
+    Useful for testing expired tokens.
     """
     expired_time = timedelta(seconds=lifetime_in_seconds + 1)
 

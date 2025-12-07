@@ -10,13 +10,14 @@ router = APIRouter()
 
 
 @router.get(
-    "", response_model=common_schemas.PaginationResponse[tasks_schema.PersonalTaskRead]
+    "",
+    response_model=common_schemas.BasePaginationResponse[tasks_schema.PersonalTaskRead],
 )
 async def get_list_of_personal_tasks(
     # Query params
     filters: tasks_schema.PersonalTaskFilterParams = Depends(),
     sorting: tasks_schema.PersonalTaskSortingParams = Depends(),
-    pagination: common_schemas.PaginationParams = Depends(),
+    pagination: common_schemas.BasePaginationParams = Depends(),
     # Other
     user: UserModel = Depends(get_current_user),
     tasks_svc: tasks_service.PersonalTaskService = Depends(get_personal_tasks_service),
@@ -26,7 +27,11 @@ async def get_list_of_personal_tasks(
     )
 
 
-@router.post("", response_model=tasks_schema.PersonalTaskRead)
+@router.post(
+    "",
+    response_model=tasks_schema.PersonalTaskRead,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_personal_task(
     task_data: tasks_schema.PersonalTaskCreate,
     user: UserModel = Depends(get_current_user),

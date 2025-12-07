@@ -36,17 +36,11 @@ def upgrade() -> None:
         ),
         sa.Column(
             "status",
-            sa.Enum(
-                "TODO", "IN_PROGRESS", "DONE", "CANCELLED", name="taskstatus"
-            ),
+            sa.Enum("TODO", "IN_PROGRESS", "DONE", "CANCELLED", name="taskstatus"),
             nullable=False,
         ),
-        sa.Column(
-            "created_at", postgresql.TIMESTAMP(timezone=True), nullable=False
-        ),
-        sa.Column(
-            "updated_at", postgresql.TIMESTAMP(timezone=True), nullable=False
-        ),
+        sa.Column("created_at", postgresql.TIMESTAMP(timezone=True), nullable=False),
+        sa.Column("updated_at", postgresql.TIMESTAMP(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -94,8 +88,6 @@ def downgrade() -> None:
         existing_nullable=False,
         existing_server_default=sa.text("(now() AT TIME ZONE 'UTC'::text)"),
     )
-    op.drop_index(
-        op.f("ix_personal_tasks_user_id"), table_name="personal_tasks"
-    )
+    op.drop_index(op.f("ix_personal_tasks_user_id"), table_name="personal_tasks")
     op.drop_table("personal_tasks")
     # ### end Alembic commands ###

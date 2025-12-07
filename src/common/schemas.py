@@ -1,9 +1,9 @@
 from pydantic import BaseModel, Field
-from typing import Generic, TypeVar, Literal
+from typing import Generic, TypeVar, Literal, Any
 
 
-class PaginationParams(BaseModel):
-    """Query parameters for pagination"""
+class BasePaginationParams(BaseModel):
+    """Base query parameters for pagination"""
 
     page: int = Field(1, ge=1, description="Page number")
     size: int = Field(20, ge=1, le=100, description="Number of elements on page")
@@ -13,8 +13,8 @@ class PaginationParams(BaseModel):
         return (self.page - 1) * self.size
 
 
-class PaginationMeta(BaseModel):
-    """Pagination metadata in response"""
+class BasePaginationMeta(BaseModel):
+    """Base pagination metadata in response"""
 
     total: int = Field(description="Total number of elements")
     page: int = Field(description="Current page number (1-based)")
@@ -41,6 +41,15 @@ class PaginationMeta(BaseModel):
 T = TypeVar("T")
 
 
-class PaginationResponse(BaseModel, Generic[T]):
+class BasePaginationResponse(BaseModel, Generic[T]):
+    """Base response with pagination"""
+
     items: list[T]
-    pagination: PaginationMeta
+    pagination: BasePaginationMeta
+
+
+class BaseSortingParams(BaseModel):
+    """Base query parameters for sorting"""
+
+    sort_by: Any
+    order: Literal["asc", "desc"] = Field("asc", description="Sort order")

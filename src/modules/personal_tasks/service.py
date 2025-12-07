@@ -13,8 +13,8 @@ class PersonalTaskService:
         user_id: int,
         filters: tasks_schemas.PersonalTaskFilterParams,
         sorting: tasks_schemas.PersonalTaskSortingParams,
-        pagination: common_schemas.PaginationParams,
-    ) -> common_schemas.PaginationResponse[tasks_schemas.PersonalTaskRead]:
+        pagination: common_schemas.BasePaginationParams,
+    ) -> common_schemas.BasePaginationResponse[tasks_schemas.PersonalTaskRead]:
 
         filter_dto = tasks_dto.PersonalTaskFilterDto(
             **filters.model_dump(exclude_unset=True)
@@ -34,9 +34,9 @@ class PersonalTaskService:
             pagination=pagination_dto,
         )
 
-        return common_schemas.PaginationResponse(
+        return common_schemas.BasePaginationResponse(
             items=items,
-            pagination=common_schemas.PaginationMeta(
+            pagination=common_schemas.BasePaginationMeta(
                 total=total,
                 page=pagination.page,
                 size=pagination.size,

@@ -133,7 +133,9 @@ async def test_login_success(
 ):
     service, mock_user_repo = auth_service_with_mocks
     login_data = OAuth2PasswordRequestForm(username="test_user", password="password123")
-    db_user = UserModelFactory.build(username="test_user", hashed_password="password123")
+    db_user = UserModelFactory.build(
+        username="test_user", hashed_password="password123"
+    )
 
     mock_user_repo.get_by_username.return_value = db_user
     mock_password_verify.return_value = True
@@ -180,7 +182,9 @@ async def test_login_wrong_password(
     login_data = OAuth2PasswordRequestForm(
         username="test_user", password="wrong_password"
     )
-    db_user = UserModelFactory.build(username="test_user", hashed_password="password123")
+    db_user = UserModelFactory.build(
+        username="test_user", hashed_password="password123"
+    )
 
     mock_user_repo.get_by_username.return_value = db_user
     mock_password_verify.return_value = False
