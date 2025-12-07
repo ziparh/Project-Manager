@@ -4,7 +4,11 @@ from unittest.mock import AsyncMock
 from fastapi import HTTPException, status
 from datetime import datetime, timedelta, timezone
 
-from modules.personal_tasks import repository, service, schemas as tasks_schemas
+from modules.personal_tasks import (
+    repository,
+    service as tasks_service,
+    schemas as tasks_schemas,
+)
 from common import schemas as common_schemas
 from enums.task import TaskStatus, TaskPriority
 
@@ -13,19 +17,19 @@ from tests.factories.models import UserModelFactory, PersonalTaskModelFactory
 
 @pytest.fixture
 def mock_repo():
-    """Mock repository"""
+
     return AsyncMock(spec=repository.PersonalTaskRepository)
 
 
 @pytest.fixture
-def tasks_svc(mock_repo):
-    """Service with mocked repository"""
-    return service.PersonalTaskService(repo=mock_repo)
+def service(mock_repo):
+    """Personal tasks service with mocked repository"""
+    return tasks_service.PersonalTaskService(repo=mock_repo)
 
 
 @pytest.mark.unit
 class TestGetList:
-    async def test_paginated_response(self, tasks_svc, mock_repo):
+    async def test_paginated_response(self, service, mock_repo):
         user = UserModelFactory.build()
         tasks = [PersonalTaskModelFactory.build() for _ in range(5)]
 
@@ -35,7 +39,7 @@ class TestGetList:
         sorting = tasks_schemas.PersonalTaskSortingParams()
         pagination = common_schemas.BasePaginationParams(page=1, size=10)
 
-        result = await tasks_svc.get_list(
+        result = await service.get_list(
             user_id=user.id,
             filters=filters,
             sorting=sorting,
@@ -48,7 +52,7 @@ class TestGetList:
         assert result.pagination.size == 10
         assert result.pagination.page == 1
 
-    async def test_calls_repository_with_correct_params(self, tasks_svc, mock_repo):
+    async def test_calls_repository_with_correct_params(self, service, mock_repo):
         user = UserModelFactory.build()
 
         mock_repo.get_list.return_value = [[], 0]
@@ -61,7 +65,7 @@ class TestGetList:
         )
         pagination = common_schemas.BasePaginationParams(page=2, size=10)
 
-        await tasks_svc.get_list(
+        await service.get_list(
             user_id=user.id,
             filters=filters,
             sorting=sorting,
@@ -79,7 +83,7 @@ class TestGetList:
         assert kwargs["pagination"].size == 10
         assert kwargs["pagination"].offset == 10
 
-    async def test_empty_result(self, tasks_svc, mock_repo):
+    async def test_empty_result(self, service, mock_repo):
         user = UserModelFactory.build()
 
         mock_repo.get_list.return_value = ([], 0)
@@ -88,7 +92,7 @@ class TestGetList:
         sorting = tasks_schemas.PersonalTaskSortingParams()
         pagination = common_schemas.BasePaginationParams(page=1, size=10)
 
-        result = await tasks_svc.get_list(
+        result = await service.get_list(
             user_id=user.id,
             filters=filters,
             sorting=sorting,
@@ -101,26 +105,26 @@ class TestGetList:
 
 @pytest.mark.unit
 class TestGetByIdAndOwner:
-    async def test_success(self, tasks_svc, mock_repo):
+    async def test_success(self, service, mock_repo):
         user = UserModelFactory.build()
         task = PersonalTaskModelFactory.build(user_id=user.id)
 
         mock_repo.get_by_id_and_user.return_value = task
 
-        result = await tasks_svc.get_by_id_and_owner(task_id=task.id, user_id=user.id)
+        result = await service.get_by_id_and_owner(task_id=task.id, user_id=user.id)
 
         assert result == task
         mock_repo.get_by_id_and_user.assert_called_once_with(
             task_id=task.id, user_id=user.id
         )
 
-    async def test_not_found(self, tasks_svc, mock_repo):
+    async def test_not_found(self, service, mock_repo):
         user = UserModelFactory.build()
 
         mock_repo.get_by_id_and_user.return_value = None
 
         with pytest.raises(HTTPException) as exc_info:
-            await tasks_svc.get_by_id_and_owner(task_id=9999, user_id=user.id)
+            await service.get_by_id_and_owner(task_id=9999, user_id=user.id)
 
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
         assert "not found" in exc_info.value.detail.lower()
@@ -128,7 +132,7 @@ class TestGetByIdAndOwner:
 
 @pytest.mark.unit
 class TestCreate:
-    async def test_with_all_data(self, tasks_svc, mock_repo):
+    async def test_with_all_data(self, service, mock_repo):
         user = UserModelFactory.build()
         task_data = tasks_schemas.PersonalTaskCreate(
             title="Test task",
@@ -148,7 +152,7 @@ class TestCreate:
 
         mock_repo.create.return_value = created_task
 
-        result = await tasks_svc.create(user_id=user.id, data=task_data)
+        result = await service.create(user_id=user.id, data=task_data)
 
         assert result == created_task
         mock_repo.create.assert_called_once()
@@ -161,7 +165,7 @@ class TestCreate:
         assert kwargs["data"]["priority"] == task_data.priority
         assert kwargs["data"]["status"] == task_data.status
 
-    async def test_with_minimal_data(self, tasks_svc, mock_repo):
+    async def test_with_minimal_data(self, service, mock_repo):
         user = UserModelFactory.build()
         task_data = tasks_schemas.PersonalTaskCreate(title="Test task")
         created_task = PersonalTaskModelFactory.build(
@@ -170,7 +174,7 @@ class TestCreate:
 
         mock_repo.create.return_value = created_task
 
-        result = await tasks_svc.create(user_id=user.id, data=task_data)
+        result = await service.create(user_id=user.id, data=task_data)
 
         assert result == created_task
         mock_repo.create.assert_called_once()
@@ -182,7 +186,7 @@ class TestCreate:
 
 @pytest.mark.unit
 class TestUpdate:
-    async def test_with_all_data(self, tasks_svc, mock_repo):
+    async def test_with_all_data(self, service, mock_repo):
         user = UserModelFactory.build()
         fixed_dt = datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
 
@@ -215,7 +219,7 @@ class TestUpdate:
             mock_repo.get_by_id_and_user.return_value = existing_task
             mock_repo.update_by_id.return_value = updated_task
 
-            result = await tasks_svc.update(
+            result = await service.update(
                 task_id=existing_task.id,
                 user_id=user.id,
                 data=update_data,
@@ -237,7 +241,7 @@ class TestUpdate:
             assert kwargs["data"]["status"] == TaskStatus.IN_PROGRESS
             assert kwargs["data"]["priority"] == TaskPriority.CRITICAL
 
-    async def test_with_partial_data(self, tasks_svc, mock_repo):
+    async def test_with_partial_data(self, service, mock_repo):
         user = UserModelFactory.build()
         existing_task = PersonalTaskModelFactory.build(
             user_id=user.id,
@@ -258,7 +262,7 @@ class TestUpdate:
         mock_repo.get_by_id_and_user.return_value = existing_task
         mock_repo.update_by_id.return_value = updated_task
 
-        result = await tasks_svc.update(
+        result = await service.update(
             task_id=existing_task.id,
             user_id=user.id,
             data=update_data,
@@ -275,14 +279,14 @@ class TestUpdate:
         assert kwargs["data"]["title"] == "New title"
         assert kwargs["data"]["status"] == TaskStatus.IN_PROGRESS
 
-    async def test_not_found(self, tasks_svc, mock_repo):
+    async def test_not_found(self, service, mock_repo):
         user = UserModelFactory.build()
         update_data = tasks_schemas.PersonalTaskPatch(title="New title")
 
         mock_repo.get_by_id_and_user.return_value = None
 
         with pytest.raises(HTTPException) as exc_info:
-            await tasks_svc.update(
+            await service.update(
                 task_id=9999,
                 user_id=user.id,
                 data=update_data,
@@ -295,27 +299,27 @@ class TestUpdate:
 
 @pytest.mark.unit
 class TestDelete:
-    async def test_success(self, tasks_svc, mock_repo):
+    async def test_success(self, service, mock_repo):
         user = UserModelFactory.build()
         task = PersonalTaskModelFactory.build(user_id=user.id)
 
         mock_repo.get_by_id_and_user.return_value = task
         mock_repo.delete_by_id.return_value = None
 
-        await tasks_svc.delete(task_id=task.id, user_id=user.id)
+        await service.delete(task_id=task.id, user_id=user.id)
 
         mock_repo.get_by_id_and_user.assert_called_once_with(
             task_id=task.id, user_id=user.id
         )
         mock_repo.delete_by_id.assert_called_once_with(task.id)
 
-    async def test_not_found(self, tasks_svc, mock_repo):
+    async def test_not_found(self, service, mock_repo):
         user = UserModelFactory.build()
 
         mock_repo.get_by_id_and_user.return_value = None
 
         with pytest.raises(HTTPException) as exc_info:
-            await tasks_svc.delete(task_id=9999, user_id=user.id)
+            await service.delete(task_id=9999, user_id=user.id)
 
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
         assert "not found" in exc_info.value.detail.lower()

@@ -6,55 +6,54 @@ from modules.users.model import User as UserModel
 
 
 @pytest.mark.integration
-async def test_delete_me_success(
-    authenticated_client: AsyncClient,
-    test_user: UserModel,
-    db_session: AsyncSession,
-):
-    response = await authenticated_client.delete("api/v1/users/me")
+class TestDeleteMe:
+    async def test_success(
+        self,
+        authenticated_client: AsyncClient,
+        test_user: UserModel,
+        db_session: AsyncSession,
+    ):
+        response = await authenticated_client.delete("api/v1/users/me")
 
-    assert response.status_code == 204
-    assert response.content == b""
+        assert response.status_code == 204
+        assert response.content == b""
 
-    deleted_user = await db_session.get(UserModel, test_user.id)
+        deleted_user = await db_session.get(UserModel, test_user.id)
 
-    assert deleted_user is None
+        assert deleted_user is None
 
+    async def test_invalid_token(
+        self,
+        client: AsyncClient,
+        invalid_token: str,
+    ):
+        inv_token_headers = {"Authorization": f"Bearer {invalid_token}"}
 
-@pytest.mark.integration
-async def test_delete_me_invalid_token(
-    client: AsyncClient,
-    invalid_token: str,
-):
-    inv_token_headers = {"Authorization": f"Bearer {invalid_token}"}
+        response = await client.delete(
+            "api/v1/users/me",
+            headers=inv_token_headers,
+        )
 
-    response = await client.delete(
-        "api/v1/users/me",
-        headers=inv_token_headers,
-    )
+        assert response.status_code == 401
 
-    assert response.status_code == 401
+    async def test_unauthorized(
+        self,
+        client: AsyncClient,
+    ):
+        response = await client.delete("api/v1/users/me")
 
+        assert response.status_code == 401
 
-@pytest.mark.integration
-async def test_delete_me_unauthorized(
-    client: AsyncClient,
-):
-    response = await client.delete("api/v1/users/me")
+    async def test_refresh_token_fail(
+        self,
+        client: AsyncClient,
+        refresh_token: str,
+    ):
+        refresh_headers = {"Authorization": f"Bearer {refresh_token}"}
 
-    assert response.status_code == 401
+        response = await client.delete(
+            "api/v1/users/me",
+            headers=refresh_headers,
+        )
 
-
-@pytest.mark.integration
-async def test_delete_me_refresh_token_fail(
-    client: AsyncClient,
-    refresh_token: str,
-):
-    refresh_headers = {"Authorization": f"Bearer {refresh_token}"}
-
-    response = await client.delete(
-        "api/v1/users/me",
-        headers=refresh_headers,
-    )
-
-    assert response.status_code == 401
+        assert response.status_code == 401
