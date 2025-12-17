@@ -139,16 +139,24 @@ class PersonalTaskRepository:
 
     def _get_priority_order_case(self):
         """
-            Returns sql case for sorting by priority
-            - CRITICAL = 4
-            - HIGH = 3
-            - MEDIUM = 2
-            - LOW = 1
+        Returns sql case for sorting by priority
+        - CRITICAL = 4
+        - HIGH = 3
+        - MEDIUM = 2
+        - LOW = 1
         """
         return case(
             (model.PersonalTask.priority == TaskPriority.CRITICAL, 4),
             (model.PersonalTask.priority == TaskPriority.HIGH, 3),
             (model.PersonalTask.priority == TaskPriority.MEDIUM, 2),
             (model.PersonalTask.priority == TaskPriority.LOW, 1),
-            else_=0
+            else_=0,
         )
+
+    # def _get_status_order_case(self):
+    #     return case(
+    #         (model.PersonalTask.status == TaskStatus.CANCELLED, 4),
+    #         (model.PersonalTask.status == TaskStatus.DONE, 3),
+    #         (model.PersonalTask.status == TaskStatus.IN_PROGRESS, 2),
+    #         (model.PersonalTask.status == TaskStatus.TODO, 1),
+    #     )

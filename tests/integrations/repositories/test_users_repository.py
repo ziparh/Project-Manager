@@ -3,8 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.users import repository, model
 
-from tests.factories.models import UserModelFactory
-
 
 @pytest.fixture
 def repo(db_session: AsyncSession) -> repository.UserRepository:
@@ -14,17 +12,21 @@ def repo(db_session: AsyncSession) -> repository.UserRepository:
 @pytest.mark.integration
 class TestCreate:
     async def test_success(self, repo, db_session: AsyncSession):
-        user_input = UserModelFactory.build()
-        created_user = await repo.create(user=user_input)
+        create_data = {
+            "username": "test",
+            "email": "test@example.com",
+            "hashed_password": "some_hash",
+        }
+        created_user = await repo.create(data=create_data)
 
         assert isinstance(created_user.id, int)
         assert created_user.id > 0
-        assert created_user.username == user_input.username
+        assert created_user.username == create_data["username"]
 
         user_in_db = await db_session.get(model.User, created_user.id)
 
         assert user_in_db is not None
-        assert user_in_db.username == user_input.username
+        assert user_in_db.username == create_data["username"]
 
 
 class TestUpdateById:

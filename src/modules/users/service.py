@@ -5,7 +5,6 @@ from . import (
     model as user_model,
     schemas as user_schemas,
 )
-from modules.auth import service as auth_service
 from core.security.password import PasswordHasher
 
 
@@ -13,10 +12,8 @@ class UserService:
     def __init__(
         self,
         user_repo: user_repository.UserRepository,
-        auth_svc: auth_service.AuthService,
     ):
         self.user_repo = user_repo
-        self.auth_service = auth_svc
 
     async def update_me(
         self, update_data: user_schemas.UserPatch, user: user_model.User

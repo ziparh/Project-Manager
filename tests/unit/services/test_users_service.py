@@ -7,7 +7,6 @@ from modules.users import (
     service as user_service,
     schemas as user_schemas,
 )
-from modules.auth import service as auth_service
 from core.security.password import PasswordHasher
 
 from tests.factories.models import UserModelFactory
@@ -20,18 +19,9 @@ def mock_user_repo():
 
 
 @pytest.fixture
-def mock_auth_svc():
-    """Mock auth service"""
-    return AsyncMock(spec=auth_service.AuthService)
-
-
-@pytest.fixture
-def user_svc(mock_user_repo, mock_auth_svc):
+def user_svc(mock_user_repo):
     """User service with mocked user repository and mocked auth service"""
-    return user_service.UserService(
-        user_repo=mock_user_repo,
-        auth_svc=mock_auth_svc,
-    )
+    return user_service.UserService(user_repo=mock_user_repo)
 
 
 @pytest.mark.unit

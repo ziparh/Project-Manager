@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Generic, TypeVar, Literal, Any
+from typing import Generic, TypeVar, Literal, Any, Sequence
 
 
 class BasePaginationParams(BaseModel):
@@ -44,7 +44,7 @@ T = TypeVar("T")
 class BasePaginationResponse(BaseModel, Generic[T]):
     """Base response with pagination"""
 
-    items: list[T]
+    items: Sequence[T]
     pagination: BasePaginationMeta
 
 

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 from datetime import datetime
-from sqlalchemy import ForeignKey, DateTime, Enum as SQLEnum
+from sqlalchemy import ForeignKey, DateTime, Enum as SQLEnum, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.base import Base
@@ -24,10 +24,21 @@ class PersonalTask(Base, TimestampMixin):
         DateTime(timezone=True), nullable=True
     )
     priority: Mapped[TaskPriority] = mapped_column(
-        SQLEnum(TaskPriority), default=TaskPriority.MEDIUM
+        SQLEnum(TaskPriority),
+        default=TaskPriority.MEDIUM,
     )
     status: Mapped[TaskStatus] = mapped_column(
         SQLEnum(TaskStatus), default=TaskStatus.TODO
     )
 
-    user: Mapped["User"] = relationship(back_populates="personal_tasks")
+    user: Mapped["User"] = relationship(
+        back_populates="personal_tasks", lazy="raise_on_sql"
+    )
+
+    __table_args__ = (
+        Index("ix_personal_tasks_user_deadline", "user_id", "deadline"),
+        Index("ix_personal_tasks_user_priority", "user_id", "priority"),
+        Index("ix_personal_tasks_user_status", "user_id", "status"),
+        Index("ix_personal_tasks_user_created_at", "user_id", "created_at"),
+        Index("ix_personal_tasks_user_updated_at", "user_id", "updated_at"),
+    )

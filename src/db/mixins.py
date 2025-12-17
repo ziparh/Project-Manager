@@ -15,3 +15,10 @@ class TimestampMixin:
         default=utc_now,
         onupdate=utc_now,
     )
+
+
+class JoinedAtMixin:
+    joined_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True),
+        default=utc_now,
+    )

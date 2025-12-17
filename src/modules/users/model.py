@@ -6,6 +6,8 @@ from db.mixins import TimestampMixin
 
 if TYPE_CHECKING:
     from modules.personal_tasks.model import PersonalTask
+    from modules.projects.model import Project
+    from modules.project_members.model import ProjectMember
 
 
 class User(Base, TimestampMixin):
@@ -17,5 +19,11 @@ class User(Base, TimestampMixin):
     hashed_password: Mapped[str]
 
     personal_tasks: Mapped[list["PersonalTask"]] = relationship(
-        back_populates="user", cascade="all, delete-orphan", lazy="selectin"
+        back_populates="user", cascade="all, delete-orphan", lazy="raise_on_sql"
+    )
+    created_projects: Mapped[list["Project"]] = relationship(
+        back_populates="creator", cascade="all, delete-orphan", lazy="raise_on_sql"
+    )
+    project_memberships: Mapped[list["ProjectMember"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan", lazy="raise_on_sql"
     )

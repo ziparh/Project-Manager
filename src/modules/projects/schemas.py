@@ -3,28 +3,43 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from common.schemas import BaseSortingParams
-from enums.task import TaskPriority, TaskStatus
+from enums.project import ProjectStatus, ProjectRole
 
 
-class PersonalTaskRead(BaseModel):
+class ProjectCreatorRead(BaseModel):
     id: int
-    title: str
-    description: str | None
-    deadline: datetime | None
-    priority: TaskPriority
-    status: TaskStatus
-    created_at: datetime
-    updated_at: datetime
+    username: str
+    email: str
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class PersonalTaskCreate(BaseModel):
+class ProjectMemberBrief(BaseModel):
+    project_id: int
+    user_id: int
+    role: ProjectRole
+    joined_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProjectRead(BaseModel):
+    id: int
+    title: str
+    description: str | None
+    deadline: datetime | None
+    status: ProjectStatus
+    creator: ProjectCreatorRead
+    members: list[ProjectMemberBrief]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProjectCreate(BaseModel):
     title: Annotated[str, Field(min_length=1, max_length=200)]
     description: Annotated[str | None, Field(min_length=1, max_length=1000)] = None
     deadline: datetime | None = None
-    priority: TaskPriority = TaskPriority.MEDIUM
-    status: TaskStatus = TaskStatus.TODO
+    status: ProjectStatus = ProjectStatus.PLANNING
 
     @field_validator("title", "description", mode="before")
     @classmethod
@@ -35,12 +50,11 @@ class PersonalTaskCreate(BaseModel):
         return v
 
 
-class PersonalTaskPatch(BaseModel):
+class ProjectPatch(BaseModel):
     title: Annotated[str | None, Field(min_length=1, max_length=200)] = None
     description: Annotated[str | None, Field(min_length=1, max_length=1000)] = None
     deadline: datetime | None = None
-    priority: TaskPriority | None = None
-    status: TaskStatus | None = None
+    status: ProjectStatus | None = None
 
     @field_validator("title", "description", mode="before")
     @classmethod
@@ -51,20 +65,21 @@ class PersonalTaskPatch(BaseModel):
         return v
 
 
-class PersonalTaskFilterParams(BaseModel):
-    """Query parameters for personal task filtering"""
+class ProjectFilterParams(BaseModel):
+    """Query parameters for project filtering"""
 
-    status: TaskStatus | None = Field(None, description="Filter by status")
-    priority: TaskPriority | None = Field(None, description="Filter by priority")
+    creator_id: int | None = Field(None, description="Filter by creator id")
+    status: ProjectStatus | None = Field(None, description="Filter by status")
+    role: ProjectRole | None = Field(None, description="Filter by role in project")
     overdue: bool | None = Field(None, description="Filter by overdue")
     search: str | None = Field(
-        None, min_length=1, description="Search by title or description"
+        None, description="Search by title, description or creator name"
     )
 
 
-class PersonalTaskSortingParams(BaseSortingParams):
-    """Query parameters for personal task sorting"""
+class ProjectSortingParams(BaseSortingParams):
+    """Query parameters for project sorting"""
 
-    sort_by: Literal["deadline", "priority", "created_at", "updated_at"] = Field(
+    sort_by: Literal["deadline", "status", "created_at", "updated_at"] = Field(
         "created_at", description="Fields to sort by"
     )

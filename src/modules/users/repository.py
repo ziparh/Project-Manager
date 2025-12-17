@@ -9,10 +9,10 @@ class UserRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def create(self, user: User) -> User:
+    async def create(self, data: dict) -> User:
+        user = User(**data)
+
         self.db.add(user)
-        await self.db.flush()
-        await self.db.refresh(user)
         await self.db.commit()
 
         return user

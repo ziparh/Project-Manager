@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Response, status
 
-from api.v1.deps.users import get_user_service
+from api.v1.deps.services import get_user_service
 from api.v1.deps.auth import get_current_user
 from modules.users import schemas, service, model
 

@@ -17,6 +17,8 @@ class PrefixConfig(BaseModel):
     auth: str = "/auth"
     users: str = "/users"
     personal_tasks: str = "/personal_tasks"
+    projects: str = "/projects"
+    project_members: str = "/projects/{project_id}/members"
 
 
 class DatabaseConfig(BaseModel):

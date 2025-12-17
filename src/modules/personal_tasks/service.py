@@ -67,6 +67,13 @@ class PersonalTaskService:
     async def update(
         self, task_id: int, user_id: int, data: tasks_schemas.PersonalTaskPatch
     ) -> model.PersonalTask:
+        task_dict = data.model_dump(exclude_unset=True)
+
+        if not task_dict:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="No data to update"
+            )
+
         is_task = await self.repo.get_by_id_and_user(task_id=task_id, user_id=user_id)
 
         if is_task is None:
@@ -74,7 +81,6 @@ class PersonalTaskService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Personal task not found",
             )
-        task_dict = data.model_dump(exclude_unset=True)
 
         updated_task = await self.repo.update_by_id(task_id=task_id, data=task_dict)
 

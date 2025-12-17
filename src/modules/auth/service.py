@@ -58,14 +58,12 @@ class AuthService:
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Email already registered.",
             )
+        hashed_password = PasswordHasher.hash(register_data.password)
 
-        user_data = register_data.model_dump(exclude={"password"})
-        user_to_db = user_model.User(
-            **user_data,
-            hashed_password=PasswordHasher.hash(register_data.password),
-        )
+        create_data = register_data.model_dump(exclude={"password"})
+        create_data["hashed_password"] = hashed_password
 
-        user = await self.user_repo.create(user=user_to_db)
+        user = await self.user_repo.create(data=create_data)
 
         return user
 

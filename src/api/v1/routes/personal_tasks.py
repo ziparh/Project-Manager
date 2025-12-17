@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Response, status
 
 from api.v1.deps.auth import get_current_user
-from api.v1.deps.personal_tasks import get_personal_tasks_service
+from api.v1.deps.services import get_personal_tasks_service
 from modules.users.model import User as UserModel
 from modules.personal_tasks import schemas as tasks_schema, service as tasks_service
 from common import schemas as common_schemas

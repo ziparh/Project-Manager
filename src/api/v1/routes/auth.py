@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
-from api.v1.deps.auth import get_auth_service
+from api.v1.deps.services import get_auth_service
 from modules.auth import service as auth_svc, schemas as auth_schemas
 from modules.users import schemas as users_schemas
 
