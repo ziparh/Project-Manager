@@ -168,10 +168,13 @@ class ProjectRepository:
         return stmt
 
     def _apply_sorting(self, stmt: Select, sorting: common_dto.SortingDto) -> Select:
+        # Sort by
         if sorting.sort_by == "status":
             sort_by = self._get_status_order_case()
         else:
             sort_by = getattr(project_model.Project, sorting.sort_by)
+
+        # Order by
         if sorting.order == "asc":
             stmt = stmt.order_by(asc(sort_by))
         else:
@@ -188,7 +191,9 @@ class ProjectRepository:
         - ON_HOLD = 2
         - PLANNING = 1
         """
+        order = [
+            (project_model.Project.status == status.name, status.sort_order)
+            for status in ProjectStatus
+        ]
 
-        whens = {status: status.sort_order for status in ProjectStatus}
-
-        return case(whens, value=project_model.Project.status, else_=0)
+        return case(*order, else_=0)

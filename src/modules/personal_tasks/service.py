@@ -19,9 +19,7 @@ class PersonalTaskService:
         filter_dto = tasks_dto.PersonalTaskFilterDto(
             **filters.model_dump(exclude_unset=True)
         )
-        sorting_dto = common_dto.SortingDto(
-            sort_by=sorting.sort_by, order=sorting.order
-        )
+        sorting_dto = common_dto.SortingDto(**sorting.model_dump(exclude_unset=True))
         pagination_dto = common_dto.PaginationDto(
             size=pagination.size,
             offset=pagination.offset,

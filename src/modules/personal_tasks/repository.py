@@ -126,10 +126,15 @@ class PersonalTaskRepository:
         return query
 
     def _apply_sorting(self, stmt: Select, sorting: common_dto.SortingDto):
+        # Sort by
         if sorting.sort_by == "priority":
             sort_by = self._get_priority_order_case()
+        elif sorting.sort_by == "status":
+            sort_by = self._get_status_order_case()
         else:
             sort_by = getattr(model.PersonalTask, sorting.sort_by)
+
+        # Sort order
         if sorting.order == "asc":
             stmt = stmt.order_by(asc(sort_by))
         else:
@@ -145,18 +150,24 @@ class PersonalTaskRepository:
         - MEDIUM = 2
         - LOW = 1
         """
-        return case(
-            (model.PersonalTask.priority == TaskPriority.CRITICAL, 4),
-            (model.PersonalTask.priority == TaskPriority.HIGH, 3),
-            (model.PersonalTask.priority == TaskPriority.MEDIUM, 2),
-            (model.PersonalTask.priority == TaskPriority.LOW, 1),
-            else_=0,
-        )
+        order = [
+            (model.PersonalTask.priority == priority.name, priority.sort_order)
+            for priority in TaskPriority
+        ]
 
-    # def _get_status_order_case(self):
-    #     return case(
-    #         (model.PersonalTask.status == TaskStatus.CANCELLED, 4),
-    #         (model.PersonalTask.status == TaskStatus.DONE, 3),
-    #         (model.PersonalTask.status == TaskStatus.IN_PROGRESS, 2),
-    #         (model.PersonalTask.status == TaskStatus.TODO, 1),
-    #     )
+        return case(*order, else_=0)
+
+    def _get_status_order_case(self):
+        """
+        Returns sql case for sorting by priority
+        - CANCELLED = 4
+        - DONE = 3
+        - IN_PROGRESS = 2
+        - TODO = 1
+        """
+        order = [
+            (model.PersonalTask.status == status.name, status.sort_order)
+            for status in TaskStatus
+        ]
+
+        return case(*order, else_=0)

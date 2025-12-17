@@ -65,6 +65,6 @@ class PersonalTaskFilterParams(BaseModel):
 class PersonalTaskSortingParams(BaseSortingParams):
     """Query parameters for personal task sorting"""
 
-    sort_by: Literal["deadline", "priority", "created_at", "updated_at"] = Field(
-        "created_at", description="Fields to sort by"
+    sort_by: Literal["deadline", "status", "priority", "created_at", "updated_at"] = (
+        Field("created_at", description="Fields to sort by")
     )

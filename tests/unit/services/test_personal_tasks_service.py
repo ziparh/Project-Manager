@@ -36,7 +36,7 @@ class TestGetList:
         mock_repo.get_list.return_value = [tasks, 5]
 
         filters = tasks_schemas.PersonalTaskFilterParams()
-        sorting = tasks_schemas.PersonalTaskSortingParams()
+        sorting = tasks_schemas.PersonalTaskSortingParams(sort_by="created_at")
         pagination = common_schemas.BasePaginationParams(page=1, size=10)
 
         result = await service.get_list(
@@ -89,7 +89,7 @@ class TestGetList:
         mock_repo.get_list.return_value = ([], 0)
 
         filters = tasks_schemas.PersonalTaskFilterParams()
-        sorting = tasks_schemas.PersonalTaskSortingParams()
+        sorting = tasks_schemas.PersonalTaskSortingParams(sort_by="created_at")
         pagination = common_schemas.BasePaginationParams(page=1, size=10)
 
         result = await service.get_list(
