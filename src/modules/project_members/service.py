@@ -2,8 +2,9 @@ from typing import Sequence
 from fastapi import HTTPException, status
 
 from core.security.permissions import PermissionChecker
-from . import repository as member_repository, model, schemas
+from . import repository as member_repository, model, schemas as member_schemas, dto as member_dto
 from modules.users import repository as user_repository
+from common import schemas as common_schemas, dto as common_dto
 from utils.datetime import utc_now
 from enums.project import ProjectRole
 
@@ -17,14 +18,44 @@ class ProjectMemberService:
         self.member_repo = member_repo
         self.user_repo = user_repo
 
-    async def get_all(self, project_id: int) -> Sequence[model.ProjectMember]:
-        return await self.member_repo.get_all_by_project_id(project_id)
+    async def get_all(
+            self,
+            project_id: int,
+            filters: member_schemas.ProjectMemberFilterParams,
+            sorting: member_schemas.ProjectMemberSortingParams,
+            pagination: common_schemas.BasePaginationParams
+    ) -> common_schemas.BasePaginationResponse[member_schemas.ProjectMemberRead]:
+        filters_dto = member_dto.ProjectMemberFilterDto(
+            **filters.model_dump(exclude_unset=True)
+        )
+        sorting_dto = common_dto.SortingDto(
+            **sorting.model_dump(exclude_unset=True)
+        )
+        pagination_dto = common_dto.PaginationDto(
+            offset=pagination.offset, size=pagination.size
+        )
+
+        items, total = await self.member_repo.get_all(
+            project_id=project_id,
+            filters=filters_dto,
+            sorting=sorting_dto,
+            pagination=pagination_dto,
+        )
+
+        return common_schemas.BasePaginationResponse(
+            items=items,
+            pagination=common_schemas.BasePaginationMeta(
+                total=total,
+                page=pagination.page,
+                size=pagination.size,
+            )
+        )
 
     async def add(
         self,
         project_id: int,
         actor: model.ProjectMember,
-        data: schemas.ProjectMemberAdd,
+        data: member_schemas.ProjectMemberAdd,
     ) -> model.ProjectMember:
         PermissionChecker.validate_role_assignment(
             actor_role=actor.role, new_role=data.role
@@ -60,7 +91,7 @@ class ProjectMemberService:
         project_id: int,
         user_id: int,
         actor: model.ProjectMember,
-        update_data: schemas.ProjectMemberPatch,
+        update_data: member_schemas.ProjectMemberPatch,
     ) -> model.ProjectMember:
         update_dict = update_data.model_dump(exclude_unset=True)
 

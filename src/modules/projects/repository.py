@@ -53,7 +53,7 @@ class ProjectRepository:
         sorting: common_dto.SortingDto,
         pagination: common_dto.PaginationDto,
     ) -> tuple[Sequence[project_model.Project], int]:
-        # Basic query
+        # Basic stmt
         stmt = (
             select(project_model.Project)
             .join(project_model.Project.members)
@@ -62,7 +62,6 @@ class ProjectRepository:
                 selectinload(project_model.Project.creator),
                 selectinload(project_model.Project.members),
             )
-            .distinct()
         )
 
         # Apply filters

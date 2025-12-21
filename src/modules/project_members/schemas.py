@@ -1,6 +1,9 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from typing import Literal
 
+from pydantic import BaseModel, ConfigDict, Field
+
+from common.schemas import BaseSortingParams
 from enums.project import ProjectRole
 
 
@@ -30,3 +33,11 @@ class ProjectMemberAdd(BaseModel):
 
 class ProjectMemberPatch(BaseModel):
     role: ProjectRole
+
+
+class ProjectMemberFilterParams(BaseModel):
+    role: ProjectRole | None = Field(None, description="Filter by role")
+
+
+class ProjectMemberSortingParams(BaseSortingParams):
+    sort_by: Literal["role", "joined_at"] = Field("joined_at", description="Fields to sort by")

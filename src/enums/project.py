@@ -28,6 +28,16 @@ class ProjectRole(Enum):
     ADMIN = "admin"
     MEMBER = "member"
 
+    @property
+    def sort_order(self) -> int:
+        match self:
+            case ProjectRole.OWNER:
+                return 3
+            case ProjectRole.ADMIN:
+                return 2
+            case ProjectRole.MEMBER:
+                return 1
+
 
 class ProjectPermission(Enum):
     """Permissions for project operations."""

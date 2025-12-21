@@ -5,20 +5,20 @@ from api.v1.deps.permissions import require_project_permission
 from api.v1.deps.services import get_projects_service
 from modules.projects import schemas as project_schemas, service
 from modules.users import model as user_model
-from common import schemas as common_schema
+from common import schemas as common_schemas
 from enums.project import ProjectPermission
 
 router = APIRouter()
 
 
 @router.get(
-    "", response_model=common_schema.BasePaginationResponse[project_schemas.ProjectRead]
+    "", response_model=common_schemas.BasePaginationResponse[project_schemas.ProjectRead]
 )
 async def get_user_projects(
     # Query params
     filters: project_schemas.ProjectFilterParams = Depends(),
     sorting: project_schemas.ProjectSortingParams = Depends(),
-    pagination: common_schema.BasePaginationParams = Depends(),
+    pagination: common_schemas.BasePaginationParams = Depends(),
     # Other
     user: user_model.User = Depends(get_current_user),
     project_svc: service.ProjectService = Depends(get_projects_service),
