@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from enums.task import TaskStatus, TaskPriority
 
-from tests.factories.models import UserModelFactory, PersonalTaskModelFactory
+from tests.factories.models import PersonalTaskModelFactory
 
 
 @pytest.mark.integration
@@ -12,14 +12,12 @@ class TestGetListOfPersonalTasks:
     """Tests for GET /personal_tasks endpoint"""
 
     async def test_return_user_tasks(
-        self, authenticated_client: AsyncClient, db_session: AsyncSession, test_user
+        self,
+        authenticated_client: AsyncClient,
+        db_session: AsyncSession,
+        test_user,
+        other_user,
     ):
-        other_user = UserModelFactory.build()
-
-        db_session.add(other_user)
-        await db_session.commit()
-        await db_session.refresh(other_user)
-
         user_tasks = [
             PersonalTaskModelFactory.build(user_id=test_user.id, title=f"Task {i}")
             for i in range(3)

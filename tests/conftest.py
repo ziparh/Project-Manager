@@ -3,6 +3,8 @@ pytest_plugins = [
     "tests.fixtures.database",
     "tests.fixtures.auth",
     "tests.fixtures.client",
+    "tests.fixtures.users",
+    "tests.fixtures.projects",
 ]
 
 
@@ -18,4 +20,8 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers",
         "integration: Integration tests (use database, may be slower)",
+    )
+    config.addinivalue_line(
+        "markers",
+        "wip: Work-in-progress tests. Temporary",
     )

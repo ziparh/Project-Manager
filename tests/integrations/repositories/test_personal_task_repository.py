@@ -6,7 +6,7 @@ from modules.personal_tasks import repository, model, dto as tasks_dto
 from common import dto as common_dto
 from enums.task import TaskStatus, TaskPriority
 
-from tests.factories.models import UserModelFactory, PersonalTaskModelFactory
+from tests.factories.models import PersonalTaskModelFactory
 
 
 @pytest.fixture
@@ -16,18 +16,12 @@ def repo(db_session: AsyncSession) -> repository.PersonalTaskRepository:
 
 @pytest.mark.integration
 class TestGetList:
-    async def test_returns_only_user_tasks(self, repo, db_session: AsyncSession):
-        user1 = UserModelFactory.build()
-        user2 = UserModelFactory.build()
-
-        db_session.add_all([user1, user2])
-        await db_session.commit()
-        await db_session.refresh(user1)
-        await db_session.refresh(user2)
-
-        task1 = PersonalTaskModelFactory.build(user_id=user1.id, title="Task 1")
-        task2 = PersonalTaskModelFactory.build(user_id=user1.id, title="Task 2")
-        task3 = PersonalTaskModelFactory.build(user_id=user2.id, title="Task 3")
+    async def test_returns_only_user_tasks(
+        self, repo, test_user, other_user, db_session: AsyncSession
+    ):
+        task1 = PersonalTaskModelFactory.build(user_id=test_user.id, title="Task 1")
+        task2 = PersonalTaskModelFactory.build(user_id=test_user.id, title="Task 2")
+        task3 = PersonalTaskModelFactory.build(user_id=other_user.id, title="Task 3")
 
         db_session.add_all([task1, task2, task3])
         await db_session.commit()
@@ -37,7 +31,7 @@ class TestGetList:
         pagination = common_dto.PaginationDto(size=10, offset=0)
 
         items, total = await repo.get_list(
-            user_id=user1.id,
+            user_id=test_user.id,
             filters=filters,
             sorting=sorting,
             pagination=pagination,
@@ -299,21 +293,15 @@ class TestGetByIdAndUser:
         assert result.id == task.id
         assert result.title == "Important Task"
 
-    async def test_returns_none_for_wrong_user(self, repo, db_session: AsyncSession):
-        user1 = UserModelFactory.build()
-        user2 = UserModelFactory.build()
-
-        db_session.add_all([user1, user2])
-        await db_session.commit()
-        await db_session.refresh(user1)
-        await db_session.refresh(user2)
-
-        task = PersonalTaskModelFactory.build(user_id=user1.id)
+    async def test_returns_none_for_wrong_user(
+        self, repo, test_user, other_user, db_session: AsyncSession
+    ):
+        task = PersonalTaskModelFactory.build(user_id=test_user.id)
 
         db_session.add(task)
         await db_session.commit()
 
-        result = await repo.get_by_id_and_user(task_id=task.id, user_id=user2.id)
+        result = await repo.get_by_id_and_user(task_id=task.id, user_id=other_user.id)
 
         assert result is None
 

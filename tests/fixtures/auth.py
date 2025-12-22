@@ -1,39 +1,11 @@
 import pytest
 import time_machine
 from datetime import datetime, timedelta, timezone
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.users.model import User as UserModel
 from core.security.jwt_handler import JWTHandler
-from core.security.password import PasswordHasher
 from core.config import settings
 from enums.token import TokenType
-
-from tests.factories.models import UserModelFactory
-
-
-@pytest.fixture
-async def test_user(db_session: AsyncSession) -> UserModel:
-    """
-    Create a test user with known credentials.
-
-    Credentials:
-    - id: 123
-    - Username: test_user
-    - Email: test@google.com
-    - Hashed_password: TestPassword123!
-    """
-    user = UserModelFactory.build(
-        id=123,
-        username="test_user",
-        email="test@google.com",
-        hashed_password=PasswordHasher.hash("TestPassword123!"),
-    )
-    db_session.add(user)
-    await db_session.commit()
-    await db_session.refresh(user)
-
-    return user
 
 
 @pytest.fixture
@@ -95,5 +67,5 @@ def expired_refresh_token(test_user: UserModel) -> str:
 
 @pytest.fixture
 def invalid_token() -> str:
-    """ " Return an invalid JWT token for testing."""
+    """Return an invalid JWT token for testing."""
     return "invalid.jwt.token"

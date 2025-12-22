@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from modules.personal_tasks import schemas
 from enums.task import TaskStatus, TaskPriority
 
-from tests.factories.models import PersonalTaskModelFactory, UserModelFactory
+from tests.factories.models import PersonalTaskModelFactory
 
 
 @pytest.mark.integration
@@ -145,13 +145,12 @@ class TestPatchPersonalTask:
         assert "not found" in resp_data["detail"].lower()
 
     async def test_not_found_other_user_task(
-        self, authenticated_client: AsyncClient, db_session: AsyncSession, test_user
+        self,
+        authenticated_client: AsyncClient,
+        db_session: AsyncSession,
+        test_user,
+        other_user,
     ):
-        other_user = UserModelFactory.build()
-
-        db_session.add(other_user)
-        await db_session.commit()
-
         task = PersonalTaskModelFactory.build(user_id=other_user.id)
 
         db_session.add(task)
