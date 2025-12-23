@@ -23,9 +23,9 @@ class BasePaginationMeta(BaseModel):
     @property
     def pages(self) -> int:
         """Number of pages"""
-        if self.size <= 0:
+        if self.total == 0:
             return 1
-        return (self.total + self.size - 1) // self.limit
+        return (self.total + self.size - 1) // self.size
 
     @property
     def has_next(self) -> bool:

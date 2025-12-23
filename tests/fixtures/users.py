@@ -31,7 +31,7 @@ async def test_user(db_session: AsyncSession) -> UserModel:
 
 @pytest.fixture
 async def other_user(db_session: AsyncSession) -> UserModel:
-    """Create a secondary user for multi-user test scenarios."""
+    """Create a secondary user for multi-user tests."""
     user = UserModelFactory.build()
     db_session.add(user)
     await db_session.commit()

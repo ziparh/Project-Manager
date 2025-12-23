@@ -14,13 +14,13 @@ from tests.factories.models import UserModelFactory
 
 @pytest.fixture
 def mock_user_repo():
-    """Mock users repository"""
+    """Mock user repository"""
     return AsyncMock(spec=user_repository.UserRepository)
 
 
 @pytest.fixture
 def user_svc(mock_user_repo):
-    """User service with mocked user repository and mocked auth service"""
+    """User service with mocked user repository"""
     return user_service.UserService(user_repo=mock_user_repo)
 
 

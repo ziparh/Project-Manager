@@ -42,9 +42,10 @@ class ProjectRepository:
 
         self.db.add(project)
         await self.db.commit()
-        await self.db.refresh(project)
 
-        return project
+        full_project = await self.get_by_id(project.id)
+
+        return full_project
 
     async def get_all(
         self,
@@ -102,13 +103,20 @@ class ProjectRepository:
             update(project_model.Project)
             .where(project_model.Project.id == project_id)
             .values(**data)
-            .returning(project_model.Project)
+            .returning(project_model.Project.id)
         )
 
         result = await self.db.execute(stmt)
+        project_id = result.scalar_one_or_none()
+
+        if project_id is None:
+            return None
         await self.db.commit()
 
-        return result.scalar_one_or_none()
+        full_project = await self.get_by_id(project_id)
+
+        return full_project
+
 
     async def delete_by_id(self, project_id: int) -> None:
         stmt = delete(project_model.Project).where(
@@ -155,6 +163,8 @@ class ProjectRepository:
                 )
 
         if filters.search:
+            stmt = stmt.join(project_model.Project.creator)
+
             search_term = f"%{filters.search}%"
             search_filters = [
                 project_model.Project.title.ilike(search_term),

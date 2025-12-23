@@ -79,7 +79,6 @@ class TestGetById:
         assert found_user.username == test_user.username
 
     async def test_not_found(self, repo, db_session: AsyncSession):
-        repo = repository.UserRepository(db_session)
         found_user = await repo.get_by_id(-1)
 
         assert found_user is None
@@ -94,7 +93,6 @@ class TestGetByUsername:
         assert found_user.username == test_user.username
 
     async def test_not_found(self, repo, db_session: AsyncSession):
-        repo = repository.UserRepository(db_session)
         found_user = await repo.get_by_username("not_exists_username")
 
         assert found_user is None

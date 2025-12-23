@@ -47,7 +47,7 @@ async def create_project(
     response_model=project_schemas.ProjectRead,
     dependencies=[Depends(require_project_permission(ProjectPermission.VIEW_PROJECT))],
 )
-async def get_project_by_id(
+async def get_project(
     project_id: int,
     project_svc: service.ProjectService = Depends(get_projects_service),
 ):

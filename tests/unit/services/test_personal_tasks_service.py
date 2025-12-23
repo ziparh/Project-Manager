@@ -17,13 +17,13 @@ from tests.factories.models import UserModelFactory, PersonalTaskModelFactory
 
 @pytest.fixture
 def mock_repo():
-
+    """Mock personal task repository"""
     return AsyncMock(spec=repository.PersonalTaskRepository)
 
 
 @pytest.fixture
 def service(mock_repo):
-    """Personal tasks service with mocked repository"""
+    """Personal task service with mocked repository"""
     return tasks_service.PersonalTaskService(repo=mock_repo)
 
 
@@ -31,13 +31,13 @@ def service(mock_repo):
 class TestGetList:
     async def test_paginated_response(self, service, mock_repo):
         user = UserModelFactory.build()
-        tasks = [PersonalTaskModelFactory.build() for _ in range(5)]
+        tasks = [PersonalTaskModelFactory.build() for _ in range(10)]
 
-        mock_repo.get_list.return_value = [tasks, 5]
+        mock_repo.get_list.return_value = [tasks, 10]
 
         filters = tasks_schemas.PersonalTaskFilterParams()
         sorting = tasks_schemas.PersonalTaskSortingParams(sort_by="created_at")
-        pagination = common_schemas.BasePaginationParams(page=1, size=10)
+        pagination = common_schemas.BasePaginationParams(page=2, size=4)
 
         result = await service.get_list(
             user_id=user.id,
@@ -47,10 +47,13 @@ class TestGetList:
         )
 
         assert isinstance(result, common_schemas.BasePaginationResponse)
-        assert len(result.items) == 5
-        assert result.pagination.total == 5
-        assert result.pagination.size == 10
-        assert result.pagination.page == 1
+        assert len(result.items) == 10
+        assert result.pagination.total == 10
+        assert result.pagination.page == 2
+        assert result.pagination.size == 4
+        assert result.pagination.pages == 3
+        assert result.pagination.has_next
+        assert result.pagination.has_previous
 
     async def test_calls_repository_with_correct_params(self, service, mock_repo):
         user = UserModelFactory.build()
@@ -101,6 +104,11 @@ class TestGetList:
 
         assert len(result.items) == 0
         assert result.pagination.total == 0
+        assert result.pagination.page == 1
+        assert result.pagination.size == 10
+        assert result.pagination.pages == 1
+        assert not result.pagination.has_next
+        assert not result.pagination.has_previous
 
 
 @pytest.mark.unit
