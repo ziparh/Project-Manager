@@ -1,5 +1,4 @@
 from typing import Sequence
-from datetime import datetime
 from sqlalchemy import select, Select, ColumnElement, case, asc, desc, func
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,13 +13,12 @@ class ProjectMemberRepository:
         self.db = db
 
     async def create(
-        self, project_id: int, user_id: int, role: ProjectRole, joined_at: datetime
+        self, project_id: int, user_id: int, role: ProjectRole
     ) -> model.ProjectMember:
         membership = model.ProjectMember(
             project_id=project_id,
             user_id=user_id,
             role=role,
-            joined_at=joined_at,
         )
 
         self.db.add(membership)

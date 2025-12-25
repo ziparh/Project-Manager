@@ -1,12 +1,15 @@
-from typing import Sequence
 from fastapi import HTTPException, status
 
 from core.security.permissions import PermissionChecker
-from . import repository as member_repository, model, schemas as member_schemas, dto as member_dto
+from . import (
+    repository as member_repository,
+    model,
+    schemas as member_schemas,
+    dto as member_dto,
+)
 from modules.users import repository as user_repository
 from common import schemas as common_schemas, dto as common_dto
-from utils.datetime import utc_now
-from enums.project import ProjectRole
+from enums.project import ProjectRole, ProjectPermission
 
 
 class ProjectMemberService:
@@ -19,18 +22,16 @@ class ProjectMemberService:
         self.user_repo = user_repo
 
     async def get_all(
-            self,
-            project_id: int,
-            filters: member_schemas.ProjectMemberFilterParams,
-            sorting: member_schemas.ProjectMemberSortingParams,
-            pagination: common_schemas.BasePaginationParams
+        self,
+        project_id: int,
+        filters: member_schemas.ProjectMemberFilterParams,
+        sorting: member_schemas.ProjectMemberSortingParams,
+        pagination: common_schemas.BasePaginationParams,
     ) -> common_schemas.BasePaginationResponse[member_schemas.ProjectMemberRead]:
         filters_dto = member_dto.ProjectMemberFilterDto(
             **filters.model_dump(exclude_unset=True)
         )
-        sorting_dto = common_dto.SortingDto(
-            **sorting.model_dump(exclude_unset=True)
-        )
+        sorting_dto = common_dto.SortingDto(**sorting.model_dump(exclude_unset=True))
         pagination_dto = common_dto.PaginationDto(
             offset=pagination.offset, size=pagination.size
         )
@@ -48,7 +49,7 @@ class ProjectMemberService:
                 total=total,
                 page=pagination.page,
                 size=pagination.size,
-            )
+            ),
         )
 
     async def add(
@@ -74,14 +75,13 @@ class ProjectMemberService:
         if is_member:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="User is already a project member",
+                detail="User is already a project member.",
             )
 
         created_member = await self.member_repo.create(
             project_id=project_id,
             user_id=data.user_id,
             role=data.role,
-            joined_at=utc_now(),
         )
 
         return created_member
@@ -97,7 +97,7 @@ class ProjectMemberService:
 
         if not update_dict:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="No data to update"
+                status_code=status.HTTP_400_BAD_REQUEST, detail="No data to update."
             )
 
         membership = await self.member_repo.get_by_user_id_and_project_id(
@@ -106,7 +106,7 @@ class ProjectMemberService:
 
         if membership is None:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Member not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Member not found."
             )
 
         PermissionChecker.validate_member_operation(
@@ -128,13 +128,13 @@ class ProjectMemberService:
 
         if membership is None:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Member not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Member not found."
             )
 
-        if membership.role == ProjectRole.OWNER:
+        if membership.role == ProjectRole.OWNER and actor.role == ProjectRole.OWNER:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Cannot remove project owner",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Owner cannot remove themselves.",
             )
 
         # If user delete themselves, it is allowed (except for owner)
@@ -143,8 +143,13 @@ class ProjectMemberService:
             return
 
         # If user delete someone else, check the permission
+        PermissionChecker.require_permission(
+            role=actor.role, permission=ProjectPermission.REMOVE_MEMBERS
+        )
+
+        # Validate the role hierarchy
         PermissionChecker.validate_member_operation(
-            actor_role=actor.role, target_role=membership.role, operation="delete"
+            actor_role=actor.role, target_role=membership.role, operation="remove"
         )
 
         await self.member_repo.delete_by_membership(membership=membership)

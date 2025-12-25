@@ -12,7 +12,8 @@ router = APIRouter()
 
 
 @router.get(
-    "", response_model=common_schemas.BasePaginationResponse[project_schemas.ProjectRead]
+    "",
+    response_model=common_schemas.BasePaginationResponse[project_schemas.ProjectRead],
 )
 async def get_user_projects(
     # Query params

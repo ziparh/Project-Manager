@@ -100,7 +100,9 @@ class TestGetAll:
             sorting=sorting,
             pagination=pagination,
         )
+
         mock_repo.get_all.assert_called_once()
+
         kwargs = mock_repo.get_all.call_args.kwargs
 
         assert kwargs["user_id"] == user.id

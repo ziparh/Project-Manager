@@ -47,3 +47,10 @@ class ProjectModelFactory(SQLAlchemyFactory[ProjectModel]):
         await session.commit()
 
         return project
+
+
+class ProjectMemberModelFactory(SQLAlchemyFactory[ProjectMemberModel]):
+    __model__ = ProjectMemberModel
+
+    __set_relationships__ = False
+    __set_foreign_keys__ = False

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Response, status
 
 from api.v1.deps.permissions import (
     require_project_permission,
+    get_current_project_member,
 )
 from api.v1.deps.services import get_project_member_service
 from modules.project_members import (
@@ -77,9 +78,7 @@ async def update_project_member(
 async def remove_project_member(
     project_id: int,
     user_id: int,
-    actor: member_model.ProjectMember = Depends(
-        require_project_permission(ProjectPermission.REMOVE_MEMBERS)
-    ),
+    actor: member_model.ProjectMember = Depends(get_current_project_member),
     members_svc: service.ProjectMemberService = Depends(get_project_member_service),
 ):
     await members_svc.delete(project_id=project_id, user_id=user_id, actor=actor)

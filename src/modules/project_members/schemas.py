@@ -32,7 +32,7 @@ class ProjectMemberAdd(BaseModel):
 
 
 class ProjectMemberPatch(BaseModel):
-    role: ProjectRole
+    role: ProjectRole | None = None
 
 
 class ProjectMemberFilterParams(BaseModel):
@@ -40,4 +40,6 @@ class ProjectMemberFilterParams(BaseModel):
 
 
 class ProjectMemberSortingParams(BaseSortingParams):
-    sort_by: Literal["role", "joined_at"] = Field("joined_at", description="Fields to sort by")
+    sort_by: Literal["role", "joined_at"] = Field(
+        "joined_at", description="Fields to sort by"
+    )

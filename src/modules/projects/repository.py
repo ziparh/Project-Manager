@@ -117,7 +117,6 @@ class ProjectRepository:
 
         return full_project
 
-
     async def delete_by_id(self, project_id: int) -> None:
         stmt = delete(project_model.Project).where(
             project_model.Project.id == project_id

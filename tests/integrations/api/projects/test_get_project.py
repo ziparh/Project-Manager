@@ -59,9 +59,7 @@ class TestCreateProject:
 
         assert response.status_code == 403
 
-    async def test_without_token(
-        self, client: AsyncClient, db_session: AsyncSession, test_project
-    ):
+    async def test_without_token(self, client: AsyncClient, test_project):
         response = await client.get(f"/api/v1/projects/{test_project.id}")
 
         assert response.status_code == 401

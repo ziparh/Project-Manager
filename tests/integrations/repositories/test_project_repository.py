@@ -36,21 +36,21 @@ class TestCreate:
                 data=create_data,
             )
 
-            assert isinstance(project.id, int)
-            assert project.creator_id == test_user.id
-            assert project.title == create_data["title"]
-            assert project.description == create_data["description"]
-            assert project.deadline == fixed_dt
-            assert project.status == ProjectStatus.ACTIVE
+        assert isinstance(project.id, int)
+        assert project.creator_id == test_user.id
+        assert project.title == create_data["title"]
+        assert project.description == create_data["description"]
+        assert project.deadline == fixed_dt
+        assert project.status == ProjectStatus.ACTIVE
 
-            project_in_db = await db_session.get(model.Project, project.id)
+        project_in_db = await db_session.get(model.Project, project.id)
 
-            assert project_in_db.id == project.id
-            assert project_in_db.creator_id == test_user.id
-            assert project_in_db.title == create_data["title"]
-            assert project_in_db.description == create_data["description"]
-            assert project_in_db.deadline == fixed_dt
-            assert project_in_db.status == ProjectStatus.ACTIVE
+        assert project_in_db.id == project.id
+        assert project_in_db.creator_id == test_user.id
+        assert project_in_db.title == create_data["title"]
+        assert project_in_db.description == create_data["description"]
+        assert project_in_db.deadline == fixed_dt
+        assert project_in_db.status == ProjectStatus.ACTIVE
 
     async def test_with_minimal_fields_success(
         self, repo, test_user, db_session: AsyncSession

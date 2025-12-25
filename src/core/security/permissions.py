@@ -110,11 +110,11 @@ class PermissionChecker:
             if target_role == ProjectRole.OWNER:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Cannot modify project owner",
+                    detail="Cannot modify project owner.",
                 )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"{actor_role.value} cannot {operation} {target_role.value}",
+                detail=f"{actor_role.value} cannot {operation} {target_role.value}.",
             )
 
     @classmethod
@@ -127,9 +127,9 @@ class PermissionChecker:
             if new_role == ProjectRole.OWNER:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Cannot assign owner role",
+                    detail="Cannot assign owner role.",
                 )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"{actor_role.value} cannot assign {new_role.value} role",
+                detail=f"{actor_role.value} cannot assign {new_role.value} role.",
             )

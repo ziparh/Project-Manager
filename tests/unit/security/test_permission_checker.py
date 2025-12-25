@@ -124,7 +124,7 @@ class TestValidateMemberOperation:
             )
 
         assert exc_info.value.status_code == status.HTTP_403_FORBIDDEN
-        assert exc_info.value.detail == "Cannot modify project owner"
+        assert exc_info.value.detail == "Cannot modify project owner."
 
     def test_cannot_modify(self):
         with pytest.raises(HTTPException) as exc_info:
@@ -135,7 +135,7 @@ class TestValidateMemberOperation:
             )
 
         assert exc_info.value.status_code == status.HTTP_403_FORBIDDEN
-        assert exc_info.value.detail == "admin cannot remove admin"
+        assert exc_info.value.detail == "admin cannot remove admin."
 
 
 @pytest.mark.unit
@@ -154,4 +154,4 @@ class TestValidateRoleAssigment:
             )
 
         assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
-        assert exc_info.value.detail == "Cannot assign owner role"
+        assert exc_info.value.detail == "Cannot assign owner role."
