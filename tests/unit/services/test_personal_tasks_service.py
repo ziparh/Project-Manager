@@ -1,7 +1,6 @@
 import pytest
 import time_machine
 from unittest.mock import AsyncMock
-from fastapi import HTTPException, status
 from datetime import datetime, timedelta, timezone
 
 from modules.personal_tasks import (
@@ -112,33 +111,6 @@ class TestGetList:
 
 
 @pytest.mark.unit
-class TestGetByIdAndOwner:
-    async def test_success(self, service, mock_repo):
-        user = UserModelFactory.build()
-        task = PersonalTaskModelFactory.build(user_id=user.id)
-
-        mock_repo.get_by_id_and_user.return_value = task
-
-        result = await service.get_by_id_and_owner(task_id=task.id, user_id=user.id)
-
-        assert result == task
-        mock_repo.get_by_id_and_user.assert_called_once_with(
-            task_id=task.id, user_id=user.id
-        )
-
-    async def test_not_found(self, service, mock_repo):
-        user = UserModelFactory.build()
-
-        mock_repo.get_by_id_and_user.return_value = None
-
-        with pytest.raises(HTTPException) as exc_info:
-            await service.get_by_id_and_owner(task_id=9999, user_id=user.id)
-
-        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
-        assert "not found" in exc_info.value.detail.lower()
-
-
-@pytest.mark.unit
 class TestCreate:
     async def test_with_all_data(self, service, mock_repo):
         user = UserModelFactory.build()
@@ -224,19 +196,14 @@ class TestUpdate:
                 status=update_data.status,
             )
 
-            mock_repo.get_by_id_and_user.return_value = existing_task
             mock_repo.update_by_id.return_value = updated_task
 
             result = await service.update(
-                task_id=existing_task.id,
-                user_id=user.id,
+                task=existing_task,
                 data=update_data,
             )
 
             assert result == updated_task
-            mock_repo.get_by_id_and_user.assert_called_once_with(
-                task_id=existing_task.id, user_id=user.id
-            )
             mock_repo.update_by_id.assert_called_once()
 
             kwargs = mock_repo.update_by_id.call_args.kwargs
@@ -267,42 +234,20 @@ class TestUpdate:
             status=update_data.status,
         )
 
-        mock_repo.get_by_id_and_user.return_value = existing_task
         mock_repo.update_by_id.return_value = updated_task
 
         result = await service.update(
-            task_id=existing_task.id,
-            user_id=user.id,
+            task=existing_task,
             data=update_data,
         )
 
         assert result == updated_task
-        mock_repo.get_by_id_and_user.assert_called_once_with(
-            task_id=existing_task.id, user_id=user.id
-        )
         mock_repo.update_by_id.assert_called_once()
 
         kwargs = mock_repo.update_by_id.call_args.kwargs
         assert kwargs["task_id"] == existing_task.id
         assert kwargs["data"]["title"] == "New title"
         assert kwargs["data"]["status"] == TaskStatus.IN_PROGRESS
-
-    async def test_not_found(self, service, mock_repo):
-        user = UserModelFactory.build()
-        update_data = tasks_schemas.PersonalTaskPatch(title="New title")
-
-        mock_repo.get_by_id_and_user.return_value = None
-
-        with pytest.raises(HTTPException) as exc_info:
-            await service.update(
-                task_id=9999,
-                user_id=user.id,
-                data=update_data,
-            )
-
-        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
-        assert "not found" in exc_info.value.detail.lower()
-        mock_repo.update_by_id.assert_not_called()
 
 
 @pytest.mark.unit
@@ -311,24 +256,8 @@ class TestDelete:
         user = UserModelFactory.build()
         task = PersonalTaskModelFactory.build(user_id=user.id)
 
-        mock_repo.get_by_id_and_user.return_value = task
         mock_repo.delete_by_id.return_value = None
 
-        await service.delete(task_id=task.id, user_id=user.id)
+        await service.delete(task=task)
 
-        mock_repo.get_by_id_and_user.assert_called_once_with(
-            task_id=task.id, user_id=user.id
-        )
         mock_repo.delete_by_id.assert_called_once_with(task.id)
-
-    async def test_not_found(self, service, mock_repo):
-        user = UserModelFactory.build()
-
-        mock_repo.get_by_id_and_user.return_value = None
-
-        with pytest.raises(HTTPException) as exc_info:
-            await service.delete(task_id=9999, user_id=user.id)
-
-        assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
-        assert "not found" in exc_info.value.detail.lower()
-        mock_repo.delete_by_id.assert_not_called()

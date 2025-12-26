@@ -41,18 +41,6 @@ class PersonalTaskService:
             ),
         )
 
-    async def get_by_id_and_owner(
-        self, task_id: int, user_id: int
-    ) -> model.PersonalTask:
-        task = await self.repo.get_by_id_and_user(task_id=task_id, user_id=user_id)
-
-        if task is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Personal task not found",
-            )
-        return task
-
     async def create(
         self, user_id: int, data: tasks_schemas.PersonalTaskCreate
     ) -> model.PersonalTask:
@@ -63,7 +51,7 @@ class PersonalTaskService:
         return task
 
     async def update(
-        self, task_id: int, user_id: int, data: tasks_schemas.PersonalTaskPatch
+        self, task: model.PersonalTask, data: tasks_schemas.PersonalTaskPatch
     ) -> model.PersonalTask:
         task_dict = data.model_dump(exclude_unset=True)
 
@@ -72,25 +60,9 @@ class PersonalTaskService:
                 status_code=status.HTTP_400_BAD_REQUEST, detail="No data to update"
             )
 
-        is_task = await self.repo.get_by_id_and_user(task_id=task_id, user_id=user_id)
-
-        if is_task is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Personal task not found",
-            )
-
-        updated_task = await self.repo.update_by_id(task_id=task_id, data=task_dict)
+        updated_task = await self.repo.update_by_id(task_id=task.id, data=task_dict)
 
         return updated_task
 
-    async def delete(self, task_id: int, user_id: int) -> None:
-        is_task = await self.repo.get_by_id_and_user(task_id=task_id, user_id=user_id)
-
-        if is_task is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Personal task not found",
-            )
-
-        await self.repo.delete_by_id(task_id)
+    async def delete(self, task: model.PersonalTask) -> None:
+        await self.repo.delete_by_id(task.id)

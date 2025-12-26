@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, Response, status
 
 from api.v1.deps.permissions import (
     require_project_permission,
-    get_current_project_member,
 )
+from api.v1.deps.project_members import get_current_project_member
 from api.v1.deps.services import get_project_member_service
 from modules.project_members import (
     service,
