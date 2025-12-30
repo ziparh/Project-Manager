@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from modules.personal_tasks.model import PersonalTask
     from modules.projects.model import Project
     from modules.project_members.model import ProjectMember
+    from modules.project_tasks.model import ProjectTask
 
 
 class User(Base, TimestampMixin):
@@ -26,4 +27,14 @@ class User(Base, TimestampMixin):
     )
     project_memberships: Mapped[list["ProjectMember"]] = relationship(
         back_populates="user", cascade="all, delete-orphan", lazy="raise_on_sql"
+    )
+    assigned_project_tasks: Mapped[list["ProjectTask"]] = relationship(
+        foreign_keys="ProjectTask.assignee_id",
+        back_populates="assignee",
+        lazy="raise_on_sql",
+    )
+    created_project_tasks: Mapped[list["ProjectTask"]] = relationship(
+        foreign_keys="ProjectTask.created_by_id",
+        back_populates="creator",
+        lazy="raise_on_sql",
     )

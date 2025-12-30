@@ -52,7 +52,7 @@ class PersonalTaskPatch(BaseModel):
 
 
 class PersonalTaskFilterParams(BaseModel):
-    """Query parameters for personal task filtering"""
+    """Query parameters for personal tasks filtering"""
 
     status: TaskStatus | None = Field(None, description="Filter by status")
     priority: TaskPriority | None = Field(None, description="Filter by priority")
@@ -63,7 +63,7 @@ class PersonalTaskFilterParams(BaseModel):
 
 
 class PersonalTaskSortingParams(BaseSortingParams):
-    """Query parameters for personal task sorting"""
+    """Query parameters for personal tasks sorting"""
 
     sort_by: Literal["deadline", "status", "priority", "created_at", "updated_at"] = (
         Field("created_at", description="Fields to sort by")

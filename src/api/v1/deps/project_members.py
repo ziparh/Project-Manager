@@ -1,5 +1,4 @@
-from fastapi import Depends, HTTPException
-from starlette import status
+from fastapi import Depends, HTTPException, status
 
 from api.v1.deps.auth import get_current_user
 from api.v1.deps.repositories import get_project_member_repository

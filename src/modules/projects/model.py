@@ -10,6 +10,7 @@ from enums.project import ProjectStatus
 if TYPE_CHECKING:
     from modules.users.model import User
     from modules.project_members.model import ProjectMember
+    from modules.project_tasks.model import ProjectTask
 
 
 class Project(Base, TimestampMixin):
@@ -22,15 +23,18 @@ class Project(Base, TimestampMixin):
     title: Mapped[str]
     description: Mapped[str | None]
     deadline: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
+        DateTime(timezone=True), nullable=True, index=True
     )
     status: Mapped[ProjectStatus] = mapped_column(
-        SQLEnum(ProjectStatus), default=ProjectStatus.PLANNING
+        SQLEnum(ProjectStatus), default=ProjectStatus.PLANNING, index=True
     )
 
     creator: Mapped["User"] = relationship(
         back_populates="created_projects", lazy="raise_on_sql"
     )
     members: Mapped[list["ProjectMember"]] = relationship(
+        back_populates="project", cascade="all, delete-orphan", lazy="raise_on_sql"
+    )
+    tasks: Mapped[list["ProjectTask"]] = relationship(
         back_populates="project", cascade="all, delete-orphan", lazy="raise_on_sql"
     )

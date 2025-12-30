@@ -1,5 +1,4 @@
 from typing import Sequence
-from datetime import datetime, timezone
 from sqlalchemy import (
     select,
     update,
@@ -21,6 +20,7 @@ from modules.project_members import model as member_model
 from modules.users import model as user_model
 from common import dto as common_dto
 from enums.project import ProjectRole, ProjectStatus
+from utils.datetime import utc_now
 
 
 class ProjectRepository:
@@ -138,7 +138,7 @@ class ProjectRepository:
             stmt = stmt.where(member_model.ProjectMember.role == filters.role)
 
         if filters.overdue is not None:
-            now = datetime.now(timezone.utc)
+            now = utc_now()
             if filters.overdue:
                 # Overdue = deadline passed AND status not completed/canceled
                 stmt = stmt.where(

@@ -19,6 +19,7 @@ class PrefixConfig(BaseModel):
     personal_tasks: str = "/personal_tasks"
     projects: str = "/projects"
     project_members: str = "/projects/{project_id}/members"
+    project_tasks: str = "/projects/{project_id}/tasks"
 
 
 class DatabaseConfig(BaseModel):
@@ -32,7 +33,7 @@ class DatabaseConfig(BaseModel):
 class AuthJWTConfig(BaseModel):
     secret_key: str
     algorithm: str = "HS256"
-    access_token_expire: int = 60 * 3  # seconds * minutes
+    access_token_expire: int = 60 * 15  # seconds * minutes
     refresh_token_expire: int = 60 * 60 * 24 * 14  # seconds * minutes * hours * days
 
 

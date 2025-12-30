@@ -1,11 +1,11 @@
 from sqlalchemy import select, update, delete, or_, and_, func, asc, desc, Select, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Sequence
-from datetime import datetime, timezone
 
 from . import model, dto as tasks_dto
 from common import dto as common_dto
 from enums.task import TaskStatus, TaskPriority
+from utils.datetime import utc_now
 
 
 class PersonalTaskRepository:
@@ -19,7 +19,7 @@ class PersonalTaskRepository:
         sorting: common_dto.SortingDto,
         pagination: common_dto.PaginationDto,
     ) -> tuple[Sequence[model.PersonalTask], int]:
-        # Basic query
+        # Basic stmt
         stmt = select(model.PersonalTask).where(model.PersonalTask.user_id == user_id)
 
         # Apply filters
@@ -82,19 +82,19 @@ class PersonalTaskRepository:
         await self.db.commit()
 
     def _apply_filters(
-        self, query: Select, filters: tasks_dto.PersonalTaskFilterDto
+        self, stmt: Select, filters: tasks_dto.PersonalTaskFilterDto
     ) -> Select:
         if filters.status:
-            query = query.where(model.PersonalTask.status == filters.status)
+            stmt = stmt.where(model.PersonalTask.status == filters.status)
 
         if filters.priority:
-            query = query.where(model.PersonalTask.priority == filters.priority)
+            stmt = stmt.where(model.PersonalTask.priority == filters.priority)
 
         if filters.overdue is not None:
-            now = datetime.now(timezone.utc)
+            now = utc_now()
             if filters.overdue:
                 # Overdue = deadline passed AND status not completed/canceled
-                query = query.where(
+                stmt = stmt.where(
                     and_(
                         model.PersonalTask.deadline < now,
                         model.PersonalTask.status.notin_(
@@ -104,7 +104,7 @@ class PersonalTaskRepository:
                 )
             else:
                 # Not Overdue = deadline in the future OR no deadline OR status completed/canceled
-                query = query.where(
+                stmt = stmt.where(
                     or_(
                         model.PersonalTask.deadline >= now,
                         model.PersonalTask.deadline.is_(None),
@@ -116,14 +116,14 @@ class PersonalTaskRepository:
 
         if filters.search:
             search_term = f"%{filters.search}%"
-            query = query.where(
+            stmt = stmt.where(
                 or_(
                     model.PersonalTask.title.ilike(search_term),
                     model.PersonalTask.description.ilike(search_term),
                 )
             )
 
-        return query
+        return stmt
 
     def _apply_sorting(self, stmt: Select, sorting: common_dto.SortingDto):
         # Sort by

@@ -6,25 +6,52 @@ from enums.project import ProjectRole, ProjectPermission
 class PermissionChecker:
     PERMISSIONS_MAPPING: dict[ProjectRole, set[ProjectPermission]] = {
         ProjectRole.OWNER: {
+            # Project
             ProjectPermission.VIEW_PROJECT,
             ProjectPermission.UPDATE_PROJECT,
             ProjectPermission.DELETE_PROJECT,
+            # Members
             ProjectPermission.VIEW_MEMBERS,
             ProjectPermission.ADD_MEMBERS,
             ProjectPermission.UPDATE_MEMBERS,
             ProjectPermission.REMOVE_MEMBERS,
+            # Tasks
+            ProjectPermission.VIEW_TASKS,
+            ProjectPermission.ADD_TASKS,
+            ProjectPermission.UPDATE_TASKS,
+            ProjectPermission.UPDATE_OWN_TASK_STATUS,
+            ProjectPermission.REMOVE_TASKS,
+            ProjectPermission.ASSIGN_OPEN_TASK,
+            ProjectPermission.UNASSIGN_OPEN_TASK,
         },
         ProjectRole.ADMIN: {
+            # Project
             ProjectPermission.VIEW_PROJECT,
             ProjectPermission.UPDATE_PROJECT,
+            # Members
             ProjectPermission.VIEW_MEMBERS,
             ProjectPermission.ADD_MEMBERS,
             ProjectPermission.UPDATE_MEMBERS,
             ProjectPermission.REMOVE_MEMBERS,
+            # Tasks
+            ProjectPermission.VIEW_TASKS,
+            ProjectPermission.ADD_TASKS,
+            ProjectPermission.UPDATE_TASKS,
+            ProjectPermission.UPDATE_OWN_TASK_STATUS,
+            ProjectPermission.REMOVE_TASKS,
+            ProjectPermission.ASSIGN_OPEN_TASK,
+            ProjectPermission.UNASSIGN_OPEN_TASK,
         },
         ProjectRole.MEMBER: {
+            # Project
             ProjectPermission.VIEW_PROJECT,
+            # Members
             ProjectPermission.VIEW_MEMBERS,
+            # Tasks
+            ProjectPermission.VIEW_TASKS,
+            ProjectPermission.UPDATE_OWN_TASK_STATUS,
+            ProjectPermission.ASSIGN_OPEN_TASK,
+            ProjectPermission.UNASSIGN_OPEN_TASK,
         },
     }
 

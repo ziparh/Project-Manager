@@ -5,47 +5,50 @@ from api.v1.deps.repositories import (
     get_project_repository,
     get_personal_task_repository,
     get_project_member_repository,
+    get_project_task_repository,
 )
-from modules.auth import service as auth_service
-from modules.users import repository as user_repository, service as user_service
-from modules.personal_tasks import repository as tasks_repo, service as tasks_svc
-from modules.projects import repository as project_repo, service as project_svc
-from modules.project_members import (
-    repository as project_member_repo,
-    service as project_member_svc,
-)
+from modules.auth.service import AuthService
+from modules.users.repository import UserRepository
+from modules.users.service import UserService
+from modules.personal_tasks.repository import PersonalTaskRepository
+from modules.personal_tasks.service import PersonalTaskService
+from modules.projects.repository import ProjectRepository
+from modules.projects.service import ProjectService
+from modules.project_members.repository import ProjectMemberRepository
+from modules.project_members.service import ProjectMemberService
+from modules.project_tasks.repository import ProjectTaskRepository
+from modules.project_tasks.service import ProjectTaskService
 
 
-async def get_auth_service(
-    repo: user_repository.UserRepository = Depends(get_user_repository),
-):
-    return auth_service.AuthService(repo)
+async def get_auth_service(repo: UserRepository = Depends(get_user_repository)):
+    return AuthService(repo)
 
 
-async def get_user_service(
-    user_repo: user_repository.UserRepository = Depends(get_user_repository),
-):
-    return user_service.UserService(user_repo=user_repo)
+async def get_user_service(user_repo: UserRepository = Depends(get_user_repository)):
+    return UserService(user_repo=user_repo)
 
 
 async def get_personal_tasks_service(
-    repo: tasks_repo.PersonalTaskRepository = Depends(get_personal_task_repository),
+    repo: PersonalTaskRepository = Depends(get_personal_task_repository),
 ):
-    return tasks_svc.PersonalTaskService(repo)
+    return PersonalTaskService(repo)
 
 
 async def get_projects_service(
-    repo: project_repo.ProjectRepository = Depends(get_project_repository),
+    repo: ProjectRepository = Depends(get_project_repository),
 ):
-    return project_svc.ProjectService(repo)
+    return ProjectService(repo)
 
 
 async def get_project_member_service(
-    member_repo: project_member_repo.ProjectMemberRepository = Depends(
-        get_project_member_repository
-    ),
-    user_repo: user_repository.UserRepository = Depends(get_user_repository),
+    member_repo: ProjectMemberRepository = Depends(get_project_member_repository),
+    user_repo: UserRepository = Depends(get_user_repository),
 ):
-    return project_member_svc.ProjectMemberService(
-        member_repo=member_repo, user_repo=user_repo
-    )
+    return ProjectMemberService(member_repo=member_repo, user_repo=user_repo)
+
+
+async def get_project_tasks_service(
+    repo: ProjectTaskRepository = Depends(get_project_task_repository),
+    member_repo: ProjectMemberRepository = Depends(get_project_member_repository),
+):
+    return ProjectTaskService(repo=repo, member_repo=member_repo)

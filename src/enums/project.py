@@ -52,3 +52,13 @@ class ProjectPermission(Enum):
     ADD_MEMBERS = "add_members"
     UPDATE_MEMBERS = "update_members"
     REMOVE_MEMBERS = "remove_members"
+
+    # Task permissions
+    VIEW_TASKS = "view_tasks"
+    ADD_TASKS = "add_tasks"
+    UPDATE_TASKS = "update_tasks"
+    UPDATE_OWN_TASK_STATUS = "update_own_task_status"
+    REMOVE_TASKS = "remove_tasks"
+
+    ASSIGN_OPEN_TASK = "assign_open_task"
+    UNASSIGN_OPEN_TASK = "unassign_open_task"

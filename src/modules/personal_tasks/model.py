@@ -39,6 +39,4 @@ class PersonalTask(Base, TimestampMixin):
         Index("ix_personal_tasks_user_deadline", "user_id", "deadline"),
         Index("ix_personal_tasks_user_priority", "user_id", "priority"),
         Index("ix_personal_tasks_user_status", "user_id", "status"),
-        Index("ix_personal_tasks_user_created_at", "user_id", "created_at"),
-        Index("ix_personal_tasks_user_updated_at", "user_id", "updated_at"),
     )

@@ -21,8 +21,7 @@ class PersonalTaskService:
         )
         sorting_dto = common_dto.SortingDto(**sorting.model_dump(exclude_unset=True))
         pagination_dto = common_dto.PaginationDto(
-            size=pagination.size,
-            offset=pagination.offset,
+            size=pagination.size, offset=pagination.offset
         )
 
         items, total = await self.repo.get_list(
