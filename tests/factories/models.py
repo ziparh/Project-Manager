@@ -5,6 +5,7 @@ from modules.users.model import User as UserModel
 from modules.personal_tasks.model import PersonalTask as PersonalTaskModel
 from modules.projects.model import Project as ProjectModel
 from modules.project_members.model import ProjectMember as ProjectMemberModel
+from modules.project_tasks.model import ProjectTask as ProjectTaskModel
 from enums.project import ProjectRole
 
 
@@ -54,3 +55,19 @@ class ProjectMemberModelFactory(SQLAlchemyFactory[ProjectMemberModel]):
 
     __set_relationships__ = False
     __set_foreign_keys__ = False
+
+
+class ProjectTaskModelFactory(SQLAlchemyFactory[ProjectTaskModel]):
+    __model__ = ProjectTaskModel
+
+    __set_relationships__ = False
+    __set_foreign_keys__ = False
+
+    @classmethod
+    async def create(cls, session: AsyncSession, **kwargs):
+        project = cls.build(**kwargs)
+
+        session.add(project)
+        await session.commit()
+
+        return project

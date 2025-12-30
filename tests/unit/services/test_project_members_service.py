@@ -34,7 +34,7 @@ def mock_user_repo():
 
 @pytest.fixture
 def service(mock_member_repo, mock_user_repo):
-    """Project member service with mocked project member and user repository"""
+    """Project member service with mocked repositories"""
     return member_service.ProjectMemberService(
         member_repo=mock_member_repo, user_repo=mock_user_repo
     )

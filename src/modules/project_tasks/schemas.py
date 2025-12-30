@@ -60,9 +60,9 @@ class ProjectTaskCreate(BaseModel):
     @model_validator(mode="after")
     def check_assignee(self):
         if self.type == ProjectTaskType.DEFAULT and self.assignee_id is None:
-            raise ValueError("assignee_id must be set when type is DEFAULT")
+            raise ValueError("assignee_id must be set when type is 'default'")
         if self.type == ProjectTaskType.OPEN and self.assignee_id is not None:
-            raise ValueError("assignee_id must be None when type is OPEN")
+            raise ValueError("assignee_id must be None when type is 'open'")
 
         return self
 

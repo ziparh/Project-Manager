@@ -10,7 +10,7 @@ from tests.factories.models import ProjectModelFactory, UserModelFactory
 
 @pytest.mark.integration
 class TestAddProjectMember:
-    """Tests for POST /projects{project_id}/members endpoint"""
+    """Tests for POST /projects/{project_id}/members endpoint"""
 
     @pytest.mark.parametrize("role", [ProjectRole.ADMIN, ProjectRole.MEMBER])
     async def test_owner_can_add(

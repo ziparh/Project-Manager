@@ -139,8 +139,8 @@ class ProjectTaskRepository:
             assignee_alias = aliased(UserModel)
             creator_alias = aliased(UserModel)
 
-            stmt = stmt.join(assignee_alias, model.ProjectTask.assignee)
-            stmt = stmt.join(creator_alias, model.ProjectTask.creator)
+            stmt = stmt.outerjoin(assignee_alias, model.ProjectTask.assignee)
+            stmt = stmt.outerjoin(creator_alias, model.ProjectTask.creator)
 
             search_term = f"%{filters.search}%"
             search_filters = [
