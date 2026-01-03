@@ -220,7 +220,7 @@ class TestUpdate:
     ):
         project = ProjectModelFactory.build()
         actor = ProjectMemberModelFactory.build(user_id=1, role=ProjectRole.ADMIN)
-        task = ProjectTaskModelFactory.build(assignee_id=2)
+        task = ProjectTaskModelFactory.build(type=ProjectTaskType.DEFAULT, assignee_id=2)
         update_data = ProjectTaskPatchFactory.build(title="Updated Title")
         updated_task = ProjectTaskModelFactory.build()
 

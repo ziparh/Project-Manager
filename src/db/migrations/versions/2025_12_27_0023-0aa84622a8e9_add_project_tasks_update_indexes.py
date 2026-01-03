@@ -136,12 +136,6 @@ def upgrade() -> None:
         op.f("ix_personal_tasks_user_updated_at"), table_name="personal_tasks"
     )
     op.create_index(
-        op.f("ix_project_members_role"),
-        "project_members",
-        ["role"],
-        unique=False,
-    )
-    op.create_index(
         op.f("ix_projects_deadline"), "projects", ["deadline"], unique=False
     )
     op.create_index(op.f("ix_projects_status"), "projects", ["status"], unique=False)
@@ -152,7 +146,6 @@ def downgrade() -> None:
     """Downgrade schema."""
     op.drop_index(op.f("ix_projects_status"), table_name="projects")
     op.drop_index(op.f("ix_projects_deadline"), table_name="projects")
-    op.drop_index(op.f("ix_project_members_role"), table_name="project_members")
     op.create_index(
         op.f("ix_personal_tasks_user_updated_at"),
         "personal_tasks",
